@@ -1,0 +1,28 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "no-cloud-cfx",
+      "devDependencies": {
+        "@citizenfx/client": "^2.0.23683-1",
+        "@citizenfx/server": "^2.0.23683-1",
+        "@types/node": "^22.18.21",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
+  },
+  "packages": {
+    "@citizenfx/client": ["@citizenfx/client@2.0.23683-1", "", {}, "sha512-TB0CPg0VR3nud2ZcMVu/qEQHk4FArHf/tlS+FCwVKHzDuGBU34omi2kKro6hAQYa5zmd+tPm1J+VthweKedemg=="],
+
+    "@citizenfx/server": ["@citizenfx/server@2.0.23683-1", "", {}, "sha512-HPGCC6Vgq6vMvqS5+cexqgfln9FCbE2CySk4hDSLCnYjQgHQ4q+cWoJBPT7yl5fy3Fv0tlA2zFshHG6BaV129g=="],
+
+    "@types/node": ["@types/node@22.19.3", "", { "dependencies": { "undici-types": "~6.21.0" } }, "sha512-1N9SBnWYOJTrNZCdh/yJE+t910Y128BoyY+zBLWhL3r0TYzlTmFdXrPwHL9DyFZmlEXNQQolTZh3KHV31QDhyA=="],
+
+    "typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
+
+    "undici-types": ["undici-types@6.21.0", "", {}, "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ=="],
+  }
+}

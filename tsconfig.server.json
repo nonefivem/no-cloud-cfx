@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "cfx server",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/server/*"],
+      "@common": ["./src/common"]
+    },
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "target": "es6",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "moduleResolution": "node",
+    "module": "commonjs",
+    "declaration": true,
+    "composite": true,
+    "declarationMap": true,
+    "lib": ["es2017"],
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["@citizenfx/server", "@types/node"]
+  },
+  "include": ["./src/server/**/*", "./src/common/**/*"]
+}

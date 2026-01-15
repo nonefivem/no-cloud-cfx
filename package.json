@@ -1,0 +1,14 @@
+{
+  "name": "@no-cloud/cfx",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^22.18.21",
+    "@citizenfx/client": "^2.0.23683-1",
+    "@citizenfx/server": "^2.0.23683-1"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

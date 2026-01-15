@@ -1,0 +1,17 @@
+{
+  "enable_client_uploads": true,
+  "enable_cross_nui_uploads": true,
+  "max_upload_file_size_mb": 50,
+  "client_upload_rate_limit_per_minute": 20,
+  "allowed_file_types": ["image/png", "image/jpeg", "image/gif"],
+  "logging": {
+    "level": "info",
+    "log_to_file": true,
+    "log_file_path": "logs/cloud_uploads.log"
+  },
+  "rate_limit": {
+    "enabled": true,
+    "client_uploads_per_minute": 10,
+    "client_identifier_type": "ip:license"
+  }
+}
