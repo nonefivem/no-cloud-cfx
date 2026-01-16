@@ -1,12 +1,20 @@
 {
   "name": "@no-cloud/cfx",
   "module": "src/index.ts",
+  "version": "0.0.1",
   "type": "module",
   "private": true,
+  "scripts": {
+    "build": "bun run scripts/build.ts"
+  },
+  "dependencies": {
+    "@citizenfx/three": "^0.100.0"
+  },
   "devDependencies": {
-    "@types/node": "^22.18.21",
     "@citizenfx/client": "^2.0.23683-1",
-    "@citizenfx/server": "^2.0.23683-1"
+    "@citizenfx/server": "^2.0.23683-1",
+    "@types/bun": "^1.3.6",
+    "@types/node": "^22.18.21"
   },
   "peerDependencies": {
     "typescript": "^5"
