@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://nonefivem.com/logo-bg-dark.png" alt="NoneM Logo" width="200" />
+  <img src="https://assets.nonefivem.com/logo/dark-bg.png" alt="NoneM Logo" width="200" />
   
   # NoCloud FiveM SDK
   
