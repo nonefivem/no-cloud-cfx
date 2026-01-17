@@ -1,5 +1,6 @@
 fx_version 'cerulean'
 game 'gta5'
+node_version '22'
 
 name 'no-cloud-cfx'
 description 'NoCloud FiveM SDK - Serverless storage and screenshot capture'
