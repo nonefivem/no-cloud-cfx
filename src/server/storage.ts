@@ -1,5 +1,11 @@
 import type { StorageItemMetadata } from "@common";
-import type { NoCloud, SignedUrlResponse } from "@nocloud/sdk";
+import type {
+  FileBody,
+  FileMetadata,
+  NoCloud,
+  SignedUrlResponse,
+  UploadResponse
+} from "@nocloud/sdk";
 import { ServerRPC } from "./lib/server.rpc";
 
 interface RequestSignedUrlParams {
@@ -11,7 +17,7 @@ interface RequestSignedUrlParams {
 export class StorageManager {
   constructor(
     private readonly client: NoCloud,
-    private readonly rpc: ServerRPC,
+    private readonly rpc: ServerRPC
   ) {
     this.registerRPCs();
   }
@@ -19,19 +25,41 @@ export class StorageManager {
   private registerRPCs() {
     this.rpc.on<RequestSignedUrlParams, SignedUrlResponse>(
       "request.signedUrl",
-      this.handleRequestSignedUrl.bind(this),
+      this.handleRequestSignedUrl.bind(this)
     );
   }
 
   private async handleRequestSignedUrl(
-    request: RequestSignedUrlParams,
+    request: RequestSignedUrlParams
   ): Promise<SignedUrlResponse> {
-    const signedUrl = await this.client.storage.generateSignedUrl(
+    return this.generateSignedUrl(
       request.contentType,
       request.size,
-      request.metadata,
+      request.metadata
     );
+  }
 
-    return signedUrl;
+  async generateSignedUrl(
+    contentType: string,
+    size: number,
+    metadata?: FileMetadata
+  ): Promise<SignedUrlResponse> {
+    return this.client.storage.generateSignedUrl(contentType, size, metadata);
+  }
+
+  async upload(
+    body: FileBody,
+    metadata?: FileMetadata
+  ): Promise<UploadResponse> {
+    return this.client.storage.upload(body, metadata);
+  }
+
+  async deleteMedia(mediaId: string): Promise<boolean> {
+    try {
+      await this.client.storage.delete(mediaId);
+      return true;
+    } catch {
+      return false;
+    }
   }
 }

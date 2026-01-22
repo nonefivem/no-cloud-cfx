@@ -1,7 +1,7 @@
 import { build, type BuildConfig, type BunPlugin } from "bun";
-import { parseArgs } from "util";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import { join } from "path";
+import { parseArgs } from "util";
 
 // Parse CLI arguments
 const { values: args } = parseArgs({
@@ -53,8 +53,8 @@ const sourcemapValue =
   args.sourcemap === "none"
     ? "none"
     : args.sourcemap === "inline"
-    ? "inline"
-    : "external";
+      ? "inline"
+      : "external";
 
 const sharedConfig: Partial<BuildConfig> = {
   minify: args.minify === true,
@@ -133,7 +133,7 @@ async function buildWeb() {
   await writeFile(join(webDistDir, "index.css"), cssContent);
 
   console.log(
-    "✓ Web built: dist/web/index.js, dist/web/index.html, dist/web/index.css"
+    "✓ Web built: dist/web/index.js, dist/web/index.html, dist/web/index.css",
   );
 }
 
@@ -142,11 +142,28 @@ async function copyFxManifest() {
 
   const manifestContent = await readFile(
     join(ROOT_DIR, "fxmanifest.lua"),
-    "utf-8"
+    "utf-8",
   );
   await writeFile(join(DIST_DIR, "fxmanifest.lua"), manifestContent);
 
   console.log("✓ Copied: dist/fxmanifest.lua");
+}
+
+async function copyLuaLibraries() {
+  console.log("Copying Lua libraries...");
+
+  const luaSrcDir = join(ROOT_DIR, "lua");
+  const luaDistDir = join(DIST_DIR, "lua");
+
+  await mkdir(luaDistDir, { recursive: true });
+
+  const luaFiles = ["client.lua", "server.lua"];
+
+  for (const file of luaFiles) {
+    const content = await readFile(join(luaSrcDir, file), "utf-8");
+    await writeFile(join(luaDistDir, file), content);
+    console.log(`✓ Copied: dist/lua/${file}`);
+  }
 }
 
 async function main() {
@@ -156,7 +173,7 @@ async function main() {
   await mkdir(DIST_DIR, { recursive: true });
 
   await Promise.all([buildClient(), buildServer(), buildWeb()]);
-  await copyFxManifest();
+  await Promise.all([copyLuaLibraries(), copyFxManifest()]);
 
   console.log("\n✓ Build complete!");
 }

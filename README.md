@@ -76,42 +76,86 @@ dist/
     ├── index.html  # NUI page
     ├── index.js    # NUI script
     └── index.css   # NUI styles
+
+lua/
+├── client.lua      # Lua client library (type-annotated)
+└── server.lua      # Lua server library (type-annotated)
 ```
 
 ## Usage
 
-### Taking a Screenshot
+### Client Exports
 
 ```lua
--- From any client-side script
-local result = exports['no-cloud']:takeImage({
+-- Take a screenshot and upload to cloud storage
+local result = exports['no-cloud-cfx']:TakeImage({
     category = 'screenshots',
     playerId = GetPlayerServerId(PlayerId())
 })
 
-if result.ok then
-    print('Screenshot uploaded:', result.dataUrl)
+if result then
+    print('Screenshot uploaded:', result.url)
+    print('Media ID:', result.id)
+end
+
+-- Generate a signed URL for client-side uploads
+local signedUrl = exports['no-cloud-cfx']:GenerateSignedUrl('image/png', 1024, {
+    category = 'uploads'
+})
+```
+
+### Server Exports
+
+```lua
+-- Generate a signed URL for uploading
+local signedUrl = exports['no-cloud-cfx']:GenerateSignedUrl('image/png', 1024, {
+    category = 'uploads'
+})
+
+-- Upload a file directly (base64 or raw data)
+local result = exports['no-cloud-cfx']:UploadMedia(base64Data, {
+    category = 'files'
+})
+
+-- Delete a file from storage
+local success = exports['no-cloud-cfx']:DeleteMedia(mediaId)
+```
+
+### Lua Libraries
+
+The Lua libraries provide type-annotated wrappers around the exports. Add them to your `fxmanifest.lua`:
+
+```lua
+-- For client-side usage
+client_script '@no-cloud-cfx/lua/client.lua'
+
+-- For server-side usage
+server_script '@no-cloud-cfx/lua/server.lua'
+```
+
+**Client-side usage:**
+
+```lua
+-- Cloud global is available after including the library
+local result = Cloud.storage:take_image({ category = 'screenshots' })
+if result then
+    print('Uploaded:', result.url)
 end
 ```
 
-### Configuration
-
-Add to your `fxmanifest.lua`:
+**Server-side usage:**
 
 ```lua
-fx_version 'cerulean'
-game 'gta5'
+-- Cloud global is available after including the library
 
-client_script 'dist/client.js'
-server_script 'dist/server.js'
+-- Generate signed URL
+local signedUrl = Cloud.storage:generate_signed_url('image/png', 1024)
 
-ui_page 'dist/web/index.html'
+-- Upload file
+local result = Cloud.storage:upload(base64Data, { category = 'files' })
 
-files {
-    'dist/web/index.html',
-    'dist/web/index.js',
-    'dist/web/index.css'
-}
+-- Delete file
+local success = Cloud.storage:delete_media(mediaId)
 ```
 
 ## Project Structure
@@ -136,17 +180,6 @@ src/
     ├── NoCloudApp.ts  # Screenshot capture logic
     └── styles.css
 ```
-
-## How It Works
-
-1. **Client** calls `takeImage()` export
-2. **Client** sends `request.image` message to NUI
-3. **NUI** captures game view using WebGL + `CfxTexture`
-4. **NUI** requests signed URL from client via `request.signedUrl` callback
-5. **Client** requests signed URL from server via RPC
-6. **Server** generates signed URL from NoCloud API
-7. **NUI** uploads image to signed URL
-8. **NUI** responds with final image URL via `response.image` callback
 
 ## Links
 
