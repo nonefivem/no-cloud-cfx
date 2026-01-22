@@ -1,4 +1,4 @@
-local CLOUD_EXPORTS = exports["no-cloud-cfx"]
+local CLOUD_EXPORTS = exports.nocloud
 
 ---@class UploadResponse
 ---@field public id string ID of the uploaded file

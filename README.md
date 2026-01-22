@@ -30,13 +30,13 @@ NoCloud FiveM SDK provides seamless integration with the NoCloud platform, enabl
 
 Download the latest release from [GitHub Releases](https://github.com/NoneM/no-cloud-cfx/releases):
 
-- **`no-cloud-cfx-v*.zip`** - Production build (minified)
-- **`no-cloud-cfx-v*-dev.zip`** - Development build (non-minified, with sourcemaps)
+- **`nocloud-v*.zip`** - Production build (minified)
+- **`nocloud-v*-dev.zip`** - Development build (non-minified, with sourcemaps)
 
 Extract to your `resources` folder and add to your `server.cfg`:
 
 ```cfg
-ensure no-cloud-cfx
+ensure nocloud
 ```
 
 ### Option 2: Build from Source
@@ -88,7 +88,7 @@ lua/
 
 ```lua
 -- Take a screenshot and upload to cloud storage
-local result = exports['no-cloud-cfx']:TakeImage({
+local result = exports['nocloud']:TakeImage({
     category = 'screenshots',
     playerId = GetPlayerServerId(PlayerId())
 })
@@ -99,7 +99,7 @@ if result then
 end
 
 -- Generate a signed URL for client-side uploads
-local signedUrl = exports['no-cloud-cfx']:GenerateSignedUrl('image/png', 1024, {
+local signedUrl = exports['nocloud']:GenerateSignedUrl('image/png', 1024, {
     category = 'uploads'
 })
 ```
@@ -108,17 +108,17 @@ local signedUrl = exports['no-cloud-cfx']:GenerateSignedUrl('image/png', 1024, {
 
 ```lua
 -- Generate a signed URL for uploading
-local signedUrl = exports['no-cloud-cfx']:GenerateSignedUrl('image/png', 1024, {
+local signedUrl = exports['nocloud']:GenerateSignedUrl('image/png', 1024, {
     category = 'uploads'
 })
 
 -- Upload a file directly (base64 or raw data)
-local result = exports['no-cloud-cfx']:UploadMedia(base64Data, {
+local result = exports['nocloud']:UploadMedia(base64Data, {
     category = 'files'
 })
 
 -- Delete a file from storage
-local success = exports['no-cloud-cfx']:DeleteMedia(mediaId)
+local success = exports['nocloud']:DeleteMedia(mediaId)
 ```
 
 ### Lua Libraries
@@ -127,10 +127,10 @@ The Lua libraries provide type-annotated wrappers around the exports. Add them t
 
 ```lua
 -- For client-side usage
-client_script '@no-cloud-cfx/lua/client.lua'
+client_script '@nocloud/lua/client.lua'
 
 -- For server-side usage
-server_script '@no-cloud-cfx/lua/server.lua'
+server_script '@nocloud/lua/server.lua'
 ```
 
 **Client-side usage:**

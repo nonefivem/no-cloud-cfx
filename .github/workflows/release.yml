@@ -30,24 +30,24 @@ jobs:
       - name: Create production zip
         run: |
           mkdir -p release
-          mv dist no-cloud-cfx
-          zip -r release/no-cloud-cfx-${{ github.ref_name }}.zip no-cloud-cfx
-          mv no-cloud-cfx dist
+          mv dist nocloud
+          zip -r release/nocloud-${{ github.ref_name }}.zip nocloud
+          mv nocloud dist
 
       - name: Build development (non-minified)
         run: bun run build --no-minify --sourcemap=inline
 
       - name: Create development zip
         run: |
-          mv dist no-cloud-cfx
-          zip -r release/no-cloud-cfx-${{ github.ref_name }}-dev.zip no-cloud-cfx
+          mv dist nocloud
+          zip -r release/nocloud-${{ github.ref_name }}-dev.zip nocloud
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            release/no-cloud-cfx-${{ github.ref_name }}.zip
-            release/no-cloud-cfx-${{ github.ref_name }}-dev.zip
+            release/nocloud-${{ github.ref_name }}.zip
+            release/nocloud-${{ github.ref_name }}-dev.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
