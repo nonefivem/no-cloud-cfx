@@ -3,15 +3,15 @@ const RPC_TIMEOUT = 20_000; // 20 seconds
 export class RPCTimeoutError extends Error {
   constructor(endpoint: string) {
     super(
-      `RPC call to endpoint "${endpoint}" timed out after ${RPC_TIMEOUT}ms`
+      `RPC call to endpoint "${endpoint}" timed out after ${RPC_TIMEOUT}ms`,
     );
     this.name = "RPCTimeoutError";
   }
 }
 
-interface RPCRequest {
+interface RPCRequest<T = any> {
   requestId: number;
-  payload: Record<string, any>;
+  payload: T;
 }
 
 /**
@@ -78,13 +78,13 @@ export class RPC {
     });
   }
 
-  async on<T>(
+  async on<T = any, R = any>(
     endpoint: string,
-    handler: (payload: Record<string, any>) => Promise<T>
+    handler: (payload: T) => Promise<R>,
   ): Promise<void> {
     onNet(
       `no-cloud:rpc:request:${endpoint}`,
-      async ({ requestId, payload }: RPCRequest) => {
+      async ({ requestId, payload }: RPCRequest<T>) => {
         const source = globalThis.source; // Capture the source of the request (it will be undefined on client)
 
         try {
@@ -112,7 +112,7 @@ export class RPC {
             });
           }
         }
-      }
+      },
     );
   }
 }
