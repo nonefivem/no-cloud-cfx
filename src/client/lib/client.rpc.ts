@@ -7,10 +7,6 @@ interface RequestSignedUrlParams {
 }
 
 export class ClientRPC extends RPC {
-  constructor() {
-    super();
-  }
-
   /**
    * Requests a signed URL from the server for uploading a file.
    * @param fileName - The name of the file to be uploaded.

@@ -9,15 +9,15 @@
   },
   "dependencies": {
     "@citizenfx/three": "^0.100.0",
-    "@nocloud/sdk": "^0.1.11"
+    "@nocloud/sdk": "^0.1.12"
   },
   "devDependencies": {
     "@citizenfx/client": "^2.0.23683-1",
     "@citizenfx/server": "^2.0.23683-1",
     "@types/bun": "^1.3.6",
-    "@types/node": "^22.18.21"
+    "@types/node": "^22.19.7"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   }
 }

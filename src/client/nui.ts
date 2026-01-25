@@ -9,7 +9,7 @@ interface RequestSignedUrlParams {
 
 type RequestSignedUrlResponse =
   | { ok: true; url: string }
-  | { ok: false; url: null };
+  | { ok: false; url: null; message: string };
 
 export class NUIManager {
   private initialized = false;
@@ -25,7 +25,7 @@ export class NUIManager {
     const pending = this.pendingRequests.get(data.requestId);
 
     if (!pending) {
-      cb({ ok: false });
+      cb({ ok: false, message: "No pending request found" });
       return;
     }
 
@@ -46,8 +46,8 @@ export class NUIManager {
       const url = await this.service.requestSignedUrl(data);
 
       cb({ ok: true, url });
-    } catch {
-      cb({ ok: false, url: null });
+    } catch (e) {
+      cb({ ok: false, url: null, message: (e as Error).message });
     }
   }
 
@@ -57,6 +57,10 @@ export class NUIManager {
   init() {
     if (this.initialized) return;
     this.initialized = true;
+
+    RegisterNuiCallback("ping", (data: any, cb: Function) =>
+      cb({ ok: true, message: "pong" })
+    );
 
     RegisterNuiCallback(
       "request.signedUrl",
@@ -81,8 +85,8 @@ export class NUIManager {
         event: "request.image",
         data: {
           requestId,
-          metadata,
-        },
+          metadata
+        }
       });
     });
   }

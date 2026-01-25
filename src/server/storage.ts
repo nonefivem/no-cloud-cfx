@@ -54,7 +54,7 @@ export class StorageManager {
     return this.client.storage.upload(body, metadata);
   }
 
-  async deleteMedia(mediaId: string): Promise<boolean> {
+  async deleteMedia(mediaId: string | string[]): Promise<boolean> {
     try {
       await this.client.storage.delete(mediaId);
       return true;

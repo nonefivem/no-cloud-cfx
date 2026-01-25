@@ -1,4 +1,4 @@
-local CLOUD_EXPORTS = exports.nocloud
+local nocloud = exports.nocloud
 
 ---@class UploadResponse
 ---@field public id string ID of the uploaded file
@@ -12,6 +12,7 @@ local CLOUD_EXPORTS = exports.nocloud
 
 ---@class CloudStorage
 ---@field take_image fun(self, metadata?: table): UploadResponse? Screenshot upload
+---@field request_signed_url fun(self, contentType: string, size: number, metadata?: table): SignedUrlResponse? Request signed URL for uploads
 
 ---@class Cloud
 ---@field storage CloudStorage
@@ -23,16 +24,16 @@ Cloud = {
 ---@param metadata? table Metadata to associate with the image
 ---@return UploadResponse? response Response containing the ID and URL of the uploaded image
 function Cloud.storage:take_image(metadata)
-    return CLOUD_EXPORTS:TakeImage(metadata)
+    return nocloud:TakeImage(metadata)
 end
 
---- Generates a signed URL for uploading a file.
+--- Requests a signed URL for uploading a file.
 ---@param contentType string The MIME type of the file
 ---@param size number The size of the file in bytes
 ---@param metadata? table Optional metadata for the file
 ---@return SignedUrlResponse? response Response containing the signed URL and media info
-function Cloud.storage:generate_signed_url(contentType, size, metadata)
-    return CLOUD_EXPORTS:GenerateSignedUrl(contentType, size, metadata)
+function Cloud.storage:request_signed_url(contentType, size, metadata)
+    return nocloud:RequestSignedUrl(contentType, size, metadata)
 end
 
 return Cloud
