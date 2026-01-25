@@ -1,20 +1,21 @@
 <div align="center">
   <img src="https://assets.nonefivem.com/logo/dark-bg.png" alt="NoneM Logo" width="200" />
   
-  # NoCloud FiveM SDK
+  # NoCloud CFX SDK
   
-  **Serverless storage and screenshot capture for FiveM**
+  **Serverless storage and screenshot capture for FiveM and RedM**
   
   [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
   [![Bun](https://img.shields.io/badge/Bun-000000?style=for-the-badge&logo=bun&logoColor=white)](https://bun.sh/)
   [![FiveM](https://img.shields.io/badge/FiveM-F40552?style=for-the-badge&logo=fivem&logoColor=white)](https://fivem.net/)
+  [![RedM](https://img.shields.io/badge/RedM-8B0000?style=for-the-badge&logo=rockstargames&logoColor=white)](https://redm.net/)
 </div>
 
 ---
 
 ## Overview
 
-NoCloud FiveM SDK provides seamless integration with the NoCloud platform, enabling FiveM servers to capture and upload in-game screenshots directly to cloud storage.
+NoCloud CFX SDK provides seamless integration with the NoCloud platform, enabling FiveM and RedM servers to capture and upload in-game screenshots directly to cloud storage.
 
 ### Features
 
@@ -70,8 +71,8 @@ bun run build --sourcemap=none
 
 ```
 dist/
-├── client.js       # FiveM client script
-├── server.js       # FiveM server script
+├── client.js       # CFX client script
+├── server.js       # CFX server script
 └── web/
     ├── index.html  # NUI page
     ├── index.js    # NUI script
@@ -162,12 +163,12 @@ local success = Cloud.storage:delete_media(mediaId)
 
 ```
 src/
-├── client/          # FiveM client-side code
+├── client/          # CFX client-side code
 │   ├── index.ts     # Entry point
 │   ├── exports.ts   # Exported functions
 │   ├── nui.ts       # NUI communication
 │   └── lib/         # Client utilities
-├── server/          # FiveM server-side code
+├── server/          # CFX server-side code
 │   ├── index.ts     # Entry point
 │   └── lib/         # Server utilities
 ├── common/          # Shared types and utilities
