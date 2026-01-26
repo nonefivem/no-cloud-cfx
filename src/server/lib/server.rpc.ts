@@ -70,6 +70,7 @@ export class ServerRPC {
       try {
         response = await handler(source, payload);
       } catch (e) {
+        console.error(`Error handling RPC request for endpoint ${endpoint}:`, e);
         ok = false;
       } finally {
         emitNet(`nocloud.rpc.response`, source, requestId, ok, response);

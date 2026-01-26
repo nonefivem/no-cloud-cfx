@@ -25,7 +25,7 @@ function main() {
   const rateLimitManager = new RateLimitManager();
   const rpc = new ServerRPC(rateLimitManager);
   const storageManager = new StorageManager(client, rpc);
-  const exportsManager = new ServerExportsManager(storageManager);
+  const exportsManager = new ServerExportsManager(rpc, storageManager);
 
   exportsManager.init();
 }

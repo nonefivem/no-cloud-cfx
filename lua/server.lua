@@ -11,6 +11,7 @@ local nocloud = exports.nocloud
 ---@field public mediaUrl string The public URL to access the media after upload
 
 ---@class CloudStorage
+---@field take_image fun(self, player_id: number, metadata?: table): UploadResponse? Screenshot upload
 ---@field generate_signed_url fun(self, contentType: string, size: number, metadata?: table): SignedUrlResponse? Generate signed URL for uploads
 ---@field upload fun(self, body: string, metadata?: table): UploadResponse? Upload file
 ---@field upload_stream fun(self, stream: any, contentType: string, contentLength: number, metadata?: table): UploadResponse? Upload stream
@@ -21,6 +22,14 @@ local nocloud = exports.nocloud
 Cloud = {
     storage = {}
 }
+
+--- Takes a screenshot and uploads it to cloud storage.
+---@param player_id number The ID of the player requesting the screenshot
+---@param metadata? table Metadata to associate with the image
+---@return UploadResponse? response Response containing the ID and URL of the uploaded image
+function Cloud.storage:take_image(player_id, metadata)
+    return nocloud:TakeImage(player_id, metadata)
+end
 
 --- Generates a signed URL for uploading a file.
 ---@param contentType string The MIME type of the file

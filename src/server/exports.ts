@@ -1,14 +1,28 @@
+import type { UploadResponse } from "@nocloud/sdk";
+import { ServerRPC } from "./lib/server.rpc";
 import type { StorageManager } from "./storage";
+import { StorageItemMetadata } from "@common";
 
 export class ServerExportsManager {
   private initialized = false;
 
-  constructor(private readonly storage: StorageManager) {}
+  constructor(
+    private readonly rpc: ServerRPC,
+    private readonly storage: StorageManager
+  ) {}
+
+  private async handleTakeImage(
+    playerId: number,
+    metadata?: StorageItemMetadata
+  ): Promise<UploadResponse> {
+    return this.rpc.call<UploadResponse>("storage.takeImage", playerId, metadata || {});
+  }
 
   init() {
     if (this.initialized) return;
     this.initialized = true;
 
+    globalThis.exports("TakeImage", this.handleTakeImage.bind(this));
     globalThis.exports(
       "GenerateSignedUrl",
       this.storage.generateSignedUrl.bind(this.storage)

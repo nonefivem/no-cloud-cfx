@@ -25,7 +25,7 @@ export class NUIManager {
     { resolve: (value: any) => void; reject: (reason?: any) => void }
   > = new Map();
 
-  constructor(private readonly service: ClientRPC) {}
+  constructor(private readonly rpc: ClientRPC) {}
 
   private handleImageResponse(
     data: { requestId: number; ok: boolean; image: UploadedImage | null },
@@ -40,7 +40,7 @@ export class NUIManager {
 
     this.pendingRequests.delete(data.requestId);
     if (!data.ok) {
-      pending.reject(new Error("Image capture failed"));
+      pending.resolve(undefined);
     } else {
       pending.resolve(data.image);
     }
@@ -56,7 +56,7 @@ export class NUIManager {
         throw new Error("Invalid parameters");
       }
 
-      const payload = await this.service.requestSignedUrl(data);
+      const payload = await this.rpc.requestSignedUrl(data);
 
       cb({ ok: true, payload });
     } catch (e) {
@@ -70,6 +70,8 @@ export class NUIManager {
   init() {
     if (this.initialized) return;
     this.initialized = true;
+
+    this.rpc.on("storage.takeImage", this.takeImage.bind(this));
 
     RegisterNuiCallback("ping", (data: any, cb: Function) =>
       cb({ ok: true, message: "pong" })
