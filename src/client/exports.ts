@@ -13,7 +13,7 @@ export class ClientExportsManager {
     if (this.initialized) return;
     this.initialized = true;
 
-    exports("TakeImage", this.nuiManager.takeImage.bind(this.nuiManager));
-    exports("RequestSignedUrl", this.rpc.requestSignedUrl.bind(this.rpc));
+    globalThis.exports("TakeImage", this.nuiManager.takeImage.bind(this.nuiManager));
+    globalThis.exports("RequestSignedUrl", this.rpc.requestSignedUrl.bind(this.rpc));
   }
 }

@@ -4,6 +4,12 @@ import { RateLimitManager } from "./lib/rate_limit.manager";
 import { ServerRPC } from "./lib/server.rpc";
 import { StorageManager } from "./storage";
 
+import fetch from "node-fetch";
+
+// Override global fetch for NoCloud SDK
+//@ts-ignore
+globalThis.fetch = fetch;
+
 function extractApiKey(): string {
   const key = GetConvar("NOCLOUD_API_KEY", "");
 

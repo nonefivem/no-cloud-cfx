@@ -24,19 +24,16 @@ export class StorageManager {
 
   private registerRPCs() {
     this.rpc.on<RequestSignedUrlParams, SignedUrlResponse>(
-      "request.signedUrl",
+      "storage.requestSignedUrl",
       this.handleRequestSignedUrl.bind(this)
     );
   }
 
   private async handleRequestSignedUrl(
-    request: RequestSignedUrlParams
+    _: number,
+    params: RequestSignedUrlParams
   ): Promise<SignedUrlResponse> {
-    return this.generateSignedUrl(
-      request.contentType,
-      request.size,
-      request.metadata
-    );
+    return this.generateSignedUrl(params.contentType, params.size, params.metadata);
   }
 
   async generateSignedUrl(
@@ -47,10 +44,7 @@ export class StorageManager {
     return this.client.storage.generateSignedUrl(contentType, size, metadata);
   }
 
-  async upload(
-    body: FileBody,
-    metadata?: FileMetadata
-  ): Promise<UploadResponse> {
+  async upload(body: FileBody, metadata?: FileMetadata): Promise<UploadResponse> {
     return this.client.storage.upload(body, metadata);
   }
 

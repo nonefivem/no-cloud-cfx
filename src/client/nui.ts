@@ -1,5 +1,6 @@
 import type { StorageItemMetadata } from "@common";
 import { ClientRPC } from "./lib/client.rpc";
+import { SignedUrlResponse } from "@nocloud/sdk";
 
 interface RequestSignedUrlParams {
   contentType: string;
@@ -7,8 +8,13 @@ interface RequestSignedUrlParams {
   metadata?: StorageItemMetadata;
 }
 
+interface UploadedImage {
+  id: string;
+  url: string;
+}
+
 type RequestSignedUrlResponse =
-  | { ok: true; url: string }
+  | { ok: true; payload: SignedUrlResponse }
   | { ok: false; url: null; message: string };
 
 export class NUIManager {
@@ -21,7 +27,10 @@ export class NUIManager {
 
   constructor(private readonly service: ClientRPC) {}
 
-  private handleImageResponse(data: any, cb: Function) {
+  private handleImageResponse(
+    data: { requestId: number; ok: boolean; image: UploadedImage | null },
+    cb: Function
+  ) {
     const pending = this.pendingRequests.get(data.requestId);
 
     if (!pending) {
@@ -30,7 +39,11 @@ export class NUIManager {
     }
 
     this.pendingRequests.delete(data.requestId);
-    pending.resolve({ ok: data.ok, dataUrl: data.dataUrl });
+    if (!data.ok) {
+      pending.reject(new Error("Image capture failed"));
+    } else {
+      pending.resolve(data.image);
+    }
     cb({ ok: true });
   }
 
@@ -43,9 +56,9 @@ export class NUIManager {
         throw new Error("Invalid parameters");
       }
 
-      const url = await this.service.requestSignedUrl(data);
+      const payload = await this.service.requestSignedUrl(data);
 
-      cb({ ok: true, url });
+      cb({ ok: true, payload });
     } catch (e) {
       cb({ ok: false, url: null, message: (e as Error).message });
     }
@@ -63,7 +76,7 @@ export class NUIManager {
     );
 
     RegisterNuiCallback(
-      "request.signedUrl",
+      "storage.requestSignedUrl",
       this.handleSignedUrlRequest.bind(this)
     );
 
@@ -76,10 +89,17 @@ export class NUIManager {
    * @returns A promise that resolves with the image data URL or an error.
    */
   takeImage(metadata?: StorageItemMetadata) {
-    return new Promise<{ ok: boolean; dataUrl?: string }>((resolve, reject) => {
+    return new Promise<UploadedImage>((resolve, reject) => {
       const requestId = this.requestIdCounter++;
 
       this.pendingRequests.set(requestId, { resolve, reject });
+
+      setTimeout(() => {
+        if (this.pendingRequests.has(requestId)) {
+          this.pendingRequests.delete(requestId);
+          reject(new Error("Image capture timed out"));
+        }
+      }, 60_000); // 60 seconds timeout
 
       SendNUIMessage({
         event: "request.image",

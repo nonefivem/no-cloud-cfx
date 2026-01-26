@@ -9,20 +9,20 @@ const { values: args } = parseArgs({
   options: {
     minify: {
       type: "boolean",
-      default: true,
+      default: true
     },
     sourcemap: {
       type: "string",
-      default: "none",
+      default: "none"
     },
     watch: {
       type: "boolean",
       short: "w",
-      default: false,
-    },
+      default: false
+    }
   },
   strict: false,
-  allowPositionals: true,
+  allowPositionals: true
 });
 
 const ROOT_DIR = join(import.meta.dir, "..");
@@ -39,14 +39,14 @@ const pathAliasPlugin: BunPlugin = {
       return { path: join(SRC_DIR, "common/index.ts") };
     });
 
-    build.onResolve({ filter: /^@\/.*$/ }, (args) => {
+    build.onResolve({ filter: /^@\/.*$/ }, args => {
       const path = args.path.replace(/^@\//, "");
       // Determine if client or server based on importer
       const isServer = args.importer.includes("/server/");
       const baseDir = isServer ? "server" : "client";
       return { path: join(SRC_DIR, baseDir, path + ".ts") };
     });
-  },
+  }
 };
 
 const sourcemapValue =
@@ -57,9 +57,14 @@ const sourcemapValue =
       : "external";
 
 const sharedConfig: Partial<BuildConfig> = {
-  minify: args.minify === true,
+  minify: {
+    whitespace: true,
+    syntax: true,
+    identifiers: false,
+    keepNames: false
+  },
   sourcemap: sourcemapValue,
-  plugins: [pathAliasPlugin],
+  plugins: [pathAliasPlugin]
 };
 
 async function buildClient() {
@@ -71,7 +76,7 @@ async function buildClient() {
     outdir: DIST_DIR,
     naming: "client.js",
     target: "node",
-    format: "esm",
+    format: "cjs"
   });
 
   if (!result.success) {
@@ -91,7 +96,7 @@ async function buildServer() {
     outdir: DIST_DIR,
     naming: "server.js",
     target: "node",
-    format: "esm",
+    format: "cjs"
   });
 
   if (!result.success) {
@@ -115,8 +120,7 @@ async function buildWeb() {
     outdir: webDistDir,
     naming: "index.js",
     target: "browser",
-    format: "esm",
-    external: ["@citizenfx/three"],
+    format: "esm"
   });
 
   if (!result.success) {
@@ -132,18 +136,13 @@ async function buildWeb() {
   const cssContent = await readFile(join(SRC_DIR, "web/styles.css"), "utf-8");
   await writeFile(join(webDistDir, "index.css"), cssContent);
 
-  console.log(
-    "✓ Web built: dist/web/index.js, dist/web/index.html, dist/web/index.css",
-  );
+  console.log("✓ Web built: dist/web/index.js, dist/web/index.html, dist/web/index.css");
 }
 
 async function copyFxManifest() {
   console.log("Copying fxmanifest.lua...");
 
-  const manifestContent = await readFile(
-    join(ROOT_DIR, "fxmanifest.lua"),
-    "utf-8",
-  );
+  const manifestContent = await readFile(join(ROOT_DIR, "fxmanifest.lua"), "utf-8");
   await writeFile(join(DIST_DIR, "fxmanifest.lua"), manifestContent);
 
   console.log("✓ Copied: dist/fxmanifest.lua");
@@ -178,7 +177,7 @@ async function main() {
   console.log("\n✓ Build complete!");
 }
 
-main().catch((error) => {
+main().catch(error => {
   console.error("Build failed:", error);
   process.exit(1);
 });

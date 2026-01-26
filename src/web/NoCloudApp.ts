@@ -10,7 +10,7 @@ import {
   ShaderMaterial,
   PlaneBufferGeometry,
   Mesh,
-  WebGLRenderer,
+  WebGLRenderer
 } from "@citizenfx/three";
 
 type StorageItemMetadata = Record<string, string | number | boolean>;
@@ -38,10 +38,19 @@ interface SignedUrlRequest {
 /**
  * Signed URL response from client
  */
-interface SignedUrlResponse {
-  ok: boolean;
-  url: string | null;
-}
+type SignedUrlResponse =
+  | {
+      ok: true;
+      payload: {
+        url: string;
+        mediaId: string;
+        mediaUrl: string;
+      };
+    }
+  | {
+      ok: false;
+      payload: null;
+    };
 
 /**
  * Image request pending in queue
@@ -83,16 +92,12 @@ function getGameTexture(): ImageData {
 
   const sceneRTT: any = new Scene();
 
-  const rtTexture = new WebGLRenderTarget(
-    window.innerWidth,
-    window.innerHeight,
-    {
-      minFilter: LinearFilter,
-      magFilter: NearestFilter,
-      format: RGBAFormat,
-      type: UnsignedByteType,
-    }
-  );
+  const rtTexture = new WebGLRenderTarget(window.innerWidth, window.innerHeight, {
+    minFilter: LinearFilter,
+    magFilter: NearestFilter,
+    format: RGBAFormat,
+    type: UnsignedByteType
+  });
 
   const gameTexture: any = new CfxTexture();
   gameTexture.needsUpdate = true;
@@ -110,7 +115,7 @@ function getGameTexture(): ImageData {
       uniform sampler2D tDiffuse;
       void main() {
         gl_FragColor = texture2D( tDiffuse, vUv );
-      }`,
+      }`
   });
 
   const plane = new PlaneBufferGeometry(window.innerWidth, window.innerHeight);
@@ -171,7 +176,7 @@ export abstract class NoCloudApp {
     const response = await fetch(`https://${this.resourceName}/${event}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(data)
     });
     return response.json();
   }
@@ -184,7 +189,7 @@ export abstract class NoCloudApp {
       if (event.data.event === "request.image" && event.data.data) {
         this.handleImageRequest({
           requestId: event.data.data.requestId,
-          metadata: event.data.data.metadata,
+          metadata: event.data.data.metadata
         });
       }
     });
@@ -211,9 +216,7 @@ export abstract class NoCloudApp {
   /**
    * Handle image request from client
    */
-  private async handleImageRequest(
-    request: PendingImageRequest
-  ): Promise<void> {
+  private async handleImageRequest(request: PendingImageRequest): Promise<void> {
     try {
       // Capture the screenshot
       const dataUrl = this.captureImage();
@@ -221,52 +224,53 @@ export abstract class NoCloudApp {
 
       // Request signed URL from client
       const signedUrlResponse = await this.nuiCallback<SignedUrlResponse>(
-        "request.signedUrl",
+        "storage.requestSignedUrl",
         {
           contentType: blob.type,
           size: blob.size,
-          metadata: request.metadata,
+          metadata: request.metadata
         } as SignedUrlRequest
       );
 
-      if (!signedUrlResponse.ok || !signedUrlResponse.url) {
+      if (!signedUrlResponse.ok) {
         await this.nuiCallback("response.image", {
           requestId: request.requestId,
           ok: false,
-          dataUrl: null,
+          image: null
         });
         return;
       }
 
+      const payload = signedUrlResponse.payload;
+
       // Upload to signed URL
-      const uploadResponse = await fetch(signedUrlResponse.url, {
+      const uploadResponse = await fetch(payload.url, {
         method: "PUT",
-        headers: { "Content-Type": blob.type },
-        body: blob,
+        body: blob
       });
 
       if (!uploadResponse.ok) {
         await this.nuiCallback("response.image", {
           requestId: request.requestId,
           ok: false,
-          dataUrl: null,
+          image: null
         });
         return;
       }
 
-      // Send success response to client with the URL (without query params)
-      const imageUrl = signedUrlResponse.url.split("?")[0];
       await this.nuiCallback("response.image", {
         requestId: request.requestId,
         ok: true,
-        dataUrl: imageUrl,
+        image: {
+          id: payload.mediaId,
+          url: payload.mediaUrl
+        }
       });
     } catch (error) {
-      console.error("Image capture error:", error);
       await this.nuiCallback("response.image", {
         requestId: request.requestId,
         ok: false,
-        dataUrl: null,
+        image: null
       });
     }
   }

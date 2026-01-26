@@ -9,11 +9,11 @@ export class ServerExportsManager {
     if (this.initialized) return;
     this.initialized = true;
 
-    exports(
+    globalThis.exports(
       "GenerateSignedUrl",
       this.storage.generateSignedUrl.bind(this.storage)
     );
-    exports("UploadMedia", this.storage.upload.bind(this.storage));
-    exports("DeleteMedia", this.storage.deleteMedia.bind(this.storage));
+    globalThis.exports("UploadMedia", this.storage.upload.bind(this.storage));
+    globalThis.exports("DeleteMedia", this.storage.deleteMedia.bind(this.storage));
   }
 }
