@@ -1,4 +1,4 @@
-import { RPCTimeoutError, RPC_TIMEOUT } from "@common";
+import { RPC_TIMEOUT, RPCResponse, RPCTimeoutError } from "@common";
 import { RateLimitManager } from "./rate_limit.manager";
 
 export class ServerRPC {
@@ -12,17 +12,19 @@ export class ServerRPC {
     onNet(`nocloud.rpc.response`, this.handleResponse.bind(this));
   }
 
-  private handleResponse<T>(requestId: number, ok: boolean, response?: T) {
+  private handleResponse<T>(requestId: number, response: RPCResponse<T>) {
     const pending = this.pendingRequests.get(requestId);
 
     if (!pending) return;
 
     this.pendingRequests.delete(requestId);
 
-    if (ok) {
-      pending.resolve(response);
+    if (response.success) {
+      pending.resolve(response.data);
     } else {
-      pending.reject(new Error(`RPC call to requestId ${requestId} failed`));
+      pending.reject(
+        new Error(response.error || `RPC call to requestId ${requestId} failed`)
+      );
     }
   }
 
@@ -32,7 +34,11 @@ export class ServerRPC {
    * @param params - parameters to send
    * @returns A promise that resolves with the response
    */
-  call<T>(endpoint: string, source: number, payload: Record<string, any>): Promise<T> {
+  call<T>(
+    endpoint: string,
+    source: number,
+    payload: Record<string, any>
+  ): Promise<T> {
     const requestId = this.requestIdCounter++;
 
     return new Promise<T>((resolve, reject) => {
@@ -55,26 +61,42 @@ export class ServerRPC {
     endpoint: string,
     handler: (source: number, payload: T) => Promise<R>
   ): Promise<void> {
-    onNet(`nocloud.rpc.request.${endpoint}`, async (requestId: number, payload: T) => {
-      const source = globalThis.source;
-      const success = this.rateLimitManager.limit(source);
+    onNet(
+      `nocloud.rpc.request.${endpoint}`,
+      async (requestId: number, payload: T) => {
+        const source = globalThis.source;
+        const success = this.rateLimitManager.limit(source);
 
-      if (!success) {
-        emitNet(`nocloud.rpc.response`, source, requestId, false);
-        return;
+        if (!success) {
+          const response: RPCResponse<R> = {
+            success: false,
+            error: "Rate limit exceeded"
+          };
+          emitNet(`nocloud.rpc.response`, source, requestId, response);
+          return;
+        }
+
+        let response: RPCResponse<R>;
+
+        try {
+          const result = await handler(source, payload);
+          response = {
+            success: true,
+            data: result
+          };
+        } catch (e) {
+          console.error(
+            `Error handling RPC request for endpoint ${endpoint}:`,
+            e
+          );
+          response = {
+            success: false,
+            error: (e as Error).message || "Unknown error"
+          };
+        }
+
+        emitNet(`nocloud.rpc.response`, source, requestId, response);
       }
-
-      let ok = true;
-      let response: R | undefined = undefined;
-
-      try {
-        response = await handler(source, payload);
-      } catch (e) {
-        console.error(`Error handling RPC request for endpoint ${endpoint}:`, e);
-        ok = false;
-      } finally {
-        emitNet(`nocloud.rpc.response`, source, requestId, ok, response);
-      }
-    });
+    );
   }
 }

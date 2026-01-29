@@ -33,7 +33,11 @@ export class StorageManager {
     _: number,
     params: RequestSignedUrlParams
   ): Promise<SignedUrlResponse> {
-    return this.generateSignedUrl(params.contentType, params.size, params.metadata);
+    return this.generateSignedUrl(
+      params.contentType,
+      params.size,
+      params.metadata
+    );
   }
 
   async generateSignedUrl(
@@ -44,7 +48,10 @@ export class StorageManager {
     return this.client.storage.generateSignedUrl(contentType, size, metadata);
   }
 
-  async upload(body: FileBody, metadata?: FileMetadata): Promise<UploadResponse> {
+  async upload(
+    body: FileBody,
+    metadata?: FileMetadata
+  ): Promise<UploadResponse> {
     return this.client.storage.upload(body, metadata);
   }
 

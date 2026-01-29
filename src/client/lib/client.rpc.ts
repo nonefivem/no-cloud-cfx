@@ -1,4 +1,9 @@
-import { RPC_TIMEOUT, RPCTimeoutError, StorageItemMetadata } from "@common";
+import {
+  RPC_TIMEOUT,
+  RPCResponse,
+  RPCTimeoutError,
+  StorageItemMetadata
+} from "@common";
 import { SignedUrlResponse } from "@nocloud/sdk";
 
 interface RequestSignedUrlParams {
@@ -14,17 +19,19 @@ export class ClientRPC {
   > = new Map();
   private requestIdCounter: number = 0;
 
-  private handleResponse<T>(requestId: number, ok: boolean, response?: T) {
+  private handleResponse<T>(requestId: number, response: RPCResponse<T>) {
     const pending = this.pendingRequests.get(requestId);
 
     if (!pending) return;
 
     this.pendingRequests.delete(requestId);
 
-    if (ok) {
-      pending.resolve(response);
+    if (response.success) {
+      pending.resolve(response.data);
     } else {
-      pending.reject(new Error(`RPC call to requestId ${requestId} failed`));
+      pending.reject(
+        new Error(response.error || `RPC call to requestId ${requestId} failed`)
+      );
     }
   }
 
@@ -61,18 +68,27 @@ export class ClientRPC {
     endpoint: string,
     handler: (payload: T) => Promise<R>
   ): Promise<void> {
-    onNet(`nocloud.rpc.request.${endpoint}`, async (requestId: number, payload: T) => {
-      let ok = true;
-      let response: R | undefined = undefined;
+    onNet(
+      `nocloud.rpc.request.${endpoint}`,
+      async (requestId: number, payload: T) => {
+        let rpcResponse: RPCResponse<R>;
 
-      try {
-        response = await handler(payload);
-      } catch (e) {
-        ok = false;
-      } finally {
-        emitNet(`nocloud.rpc.response`, requestId, ok, response);
+        try {
+          const result = await handler(payload);
+          rpcResponse = {
+            success: true,
+            data: result
+          };
+        } catch (e) {
+          rpcResponse = {
+            success: false,
+            error: (e as Error).message || "Unknown error"
+          };
+        }
+
+        emitNet(`nocloud.rpc.response`, requestId, rpcResponse);
       }
-    });
+    );
   }
 
   /**
@@ -82,7 +98,9 @@ export class ClientRPC {
    * @param metadata - Optional metadata associated with the file.
    * @returns A promise that resolves with the signed URL.
    */
-  requestSignedUrl(payload: RequestSignedUrlParams): Promise<SignedUrlResponse> {
+  requestSignedUrl(
+    payload: RequestSignedUrlParams
+  ): Promise<SignedUrlResponse> {
     return this.call<SignedUrlResponse>("storage.requestSignedUrl", payload);
   }
 }

@@ -1,6 +1,6 @@
 import type { StorageItemMetadata } from "@common";
-import { ClientRPC } from "./lib/client.rpc";
 import { SignedUrlResponse } from "@nocloud/sdk";
+import { ClientRPC } from "./lib/client.rpc";
 
 interface RequestSignedUrlParams {
   contentType: string;
@@ -71,7 +71,10 @@ export class NUIManager {
     if (this.initialized) return;
     this.initialized = true;
 
-    this.rpc.on("storage.takeImage", this.takeImage.bind(this));
+    this.rpc.on<StorageItemMetadata | undefined, UploadedImage>(
+      "storage.takeImage",
+      this.takeImage.bind(this)
+    );
 
     RegisterNuiCallback("ping", (data: any, cb: Function) =>
       cb({ ok: true, message: "pong" })
