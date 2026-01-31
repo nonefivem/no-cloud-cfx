@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@citizenfx/three": "^0.100.0",
-    "@nocloud/sdk": "^0.1.12",
+    "@nocloud/sdk": "^0.1.13",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {

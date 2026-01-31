@@ -6,7 +6,7 @@
       "name": "no-cloud-cfx",
       "dependencies": {
         "@citizenfx/three": "^0.100.0",
-        "@nocloud/sdk": "^0.1.12",
+        "@nocloud/sdk": "^0.1.13",
         "node-fetch": "^3.3.2",
       },
       "devDependencies": {
@@ -27,7 +27,7 @@
 
     "@citizenfx/three": ["@citizenfx/three@0.100.0", "", {}, "sha512-qiJHVGNzhGfZP+poq4X3m9cDoi4H1mK4UgfbBTZoHmtSIiDRAIYEWsb93MHst+ADHtn0vJ8msMRQaAHC3horSA=="],
 
-    "@nocloud/sdk": ["@nocloud/sdk@0.1.12", "", {}, "sha512-nZwlqrhzGOBHzN7QsjhIImIlm0PXvKW2ymEFBKIdwWNZ0hetqfvj0m3JqaHViFKy214MZlYTg7fvl0dR2bRLiw=="],
+    "@nocloud/sdk": ["@nocloud/sdk@0.1.13", "", {}, "sha512-YdmW0DE/+pnqx0thkTKLxlHOUfT1Za9d0u3ojES37pGUIYvS2vMMcUK4+0rwXit0T1wLOYaeccZOmXRBijnW5g=="],
 
     "@types/bun": ["@types/bun@1.3.6", "", { "dependencies": { "bun-types": "1.3.6" } }, "sha512-uWCv6FO/8LcpREhenN1d1b6fcspAB+cefwD7uti8C8VffIv0Um08TKMn98FynpTiU38+y2dUO55T11NgDt8VAA=="],
 
