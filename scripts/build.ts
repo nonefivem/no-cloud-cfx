@@ -165,6 +165,30 @@ async function copyLuaLibraries() {
   }
 }
 
+async function copyConfig() {
+  console.log("Copying config...");
+
+  const configContent = await readFile(join(ROOT_DIR, "cloud.config.json"), "utf-8");
+  await writeFile(join(DIST_DIR, "config.json"), configContent);
+
+  console.log("✓ Copied: dist/config.json");
+}
+
+async function copySchema() {
+  console.log("Copying schema...");
+
+  const schemaDistDir = join(DIST_DIR, "schema");
+  await mkdir(schemaDistDir, { recursive: true });
+
+  const schemaContent = await readFile(
+    join(ROOT_DIR, "schema/config.schema.json"),
+    "utf-8"
+  );
+  await writeFile(join(schemaDistDir, "config.schema.json"), schemaContent);
+
+  console.log("✓ Copied: dist/schema/config.schema.json");
+}
+
 async function main() {
   console.log("Starting build...");
   console.log(`Options: minify=${args.minify}, sourcemap=${args.sourcemap}\n`);
@@ -172,7 +196,7 @@ async function main() {
   await mkdir(DIST_DIR, { recursive: true });
 
   await Promise.all([buildClient(), buildServer(), buildWeb()]);
-  await Promise.all([copyLuaLibraries(), copyFxManifest()]);
+  await Promise.all([copyLuaLibraries(), copyFxManifest(), copyConfig(), copySchema()]);
 
   console.log("\n✓ Build complete!");
 }

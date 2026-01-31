@@ -1,7 +1,8 @@
 {
+  "$schema": "./schema/config.schema.json",
   "enable_client_uploads": true,
   "enable_cross_nui_uploads": true,
-  "max_upload_file_size_mb": 50,
+  "max_upload_size_mb": 50,
   "client_upload_rate_limit_per_minute": 20,
   "allowed_file_types": ["image/png", "image/jpeg", "image/gif"],
   "logging": {
