@@ -78,7 +78,7 @@ dist/
     ├── index.js    # NUI script
     └── index.css   # NUI styles
 
-lua/
+lib/
 ├── client.lua      # Lua client library (type-annotated)
 └── server.lua      # Lua server library (type-annotated)
 ```
@@ -128,10 +128,10 @@ The Lua libraries provide type-annotated wrappers around the exports. Add them t
 
 ```lua
 -- For client-side usage
-client_script '@nocloud/lua/client.lua'
+client_script '@nocloud/lib/client.lua'
 
 -- For server-side usage
-server_script '@nocloud/lua/server.lua'
+server_script '@nocloud/lib/server.lua'
 ```
 
 **Client-side usage:**

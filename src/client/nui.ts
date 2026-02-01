@@ -1,4 +1,4 @@
-import type { StorageItemMetadata } from "@common";
+import { Logger, type StorageItemMetadata } from "@common";
 import { SignedUrlResponse } from "@nocloud/sdk";
 import { ClientRPC } from "./lib/client.rpc";
 
@@ -18,6 +18,7 @@ type RequestSignedUrlResponse =
   | { ok: false; url: null; message: string };
 
 export class NUIManager {
+  private readonly logger = new Logger("NUIManager");
   private initialized = false;
   private requestIdCounter: number = 0;
   private readonly pendingRequests: Map<
@@ -56,10 +57,15 @@ export class NUIManager {
         throw new Error("Invalid parameters");
       }
 
+      this.logger.debug(
+        `Requesting signed URL for ${data.contentType} (${data.size} bytes)`
+      );
       const payload = await this.rpc.requestSignedUrl(data);
 
+      this.logger.debug("Signed URL received successfully");
       cb({ ok: true, payload });
     } catch (e) {
+      this.logger.error(`Failed to request signed URL: ${(e as Error).message}`);
       cb({ ok: false, url: null, message: (e as Error).message });
     }
   }
@@ -97,11 +103,13 @@ export class NUIManager {
     return new Promise<UploadedImage>((resolve, reject) => {
       const requestId = this.requestIdCounter++;
 
+      this.logger.debug(`Taking image with requestId: ${requestId}`);
       this.pendingRequests.set(requestId, { resolve, reject });
 
       setTimeout(() => {
         if (this.pendingRequests.has(requestId)) {
           this.pendingRequests.delete(requestId);
+          this.logger.warn(`Image capture timed out for requestId: ${requestId}`);
           reject(new Error("Image capture timed out"));
         }
       }, 60_000); // 60 seconds timeout

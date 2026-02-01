@@ -1,4 +1,5 @@
 import {
+  Logger,
   RPC_TIMEOUT,
   RPCResponse,
   RPCTimeoutError,
@@ -13,6 +14,7 @@ interface RequestSignedUrlParams {
 }
 
 export class ClientRPC {
+  private readonly logger = new Logger("ClientRPC");
   private readonly pendingRequests: Map<
     number,
     { resolve: (value: any) => void; reject: (reason?: any) => void }
@@ -68,27 +70,28 @@ export class ClientRPC {
     endpoint: string,
     handler: (payload: T) => Promise<R>
   ): Promise<void> {
-    onNet(
-      `nocloud.rpc.request.${endpoint}`,
-      async (requestId: number, payload: T) => {
-        let rpcResponse: RPCResponse<R>;
+    onNet(`nocloud.rpc.request.${endpoint}`, async (requestId: number, payload: T) => {
+      let rpcResponse: RPCResponse<R>;
 
-        try {
-          const result = await handler(payload);
-          rpcResponse = {
-            success: true,
-            data: result
-          };
-        } catch (e) {
-          rpcResponse = {
-            success: false,
-            error: (e as Error).message || "Unknown error"
-          };
-        }
-
-        emitNet(`nocloud.rpc.response`, requestId, rpcResponse);
+      try {
+        const result = await handler(payload);
+        rpcResponse = {
+          success: true,
+          data: result
+        };
+        this.logger.debug(`RPC request handled successfully for endpoint: ${endpoint}`);
+      } catch (e) {
+        this.logger.error(
+          `Error handling RPC request for endpoint ${endpoint}: ${(e as Error).message}`
+        );
+        rpcResponse = {
+          success: false,
+          error: (e as Error).message || "Unknown error"
+        };
       }
-    );
+
+      emitNet(`nocloud.rpc.response`, requestId, rpcResponse);
+    });
   }
 
   /**
@@ -98,9 +101,7 @@ export class ClientRPC {
    * @param metadata - Optional metadata associated with the file.
    * @returns A promise that resolves with the signed URL.
    */
-  requestSignedUrl(
-    payload: RequestSignedUrlParams
-  ): Promise<SignedUrlResponse> {
+  requestSignedUrl(payload: RequestSignedUrlParams): Promise<SignedUrlResponse> {
     return this.call<SignedUrlResponse>("storage.requestSignedUrl", payload);
   }
 }

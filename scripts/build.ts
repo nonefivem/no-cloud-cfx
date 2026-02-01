@@ -151,8 +151,8 @@ async function copyFxManifest() {
 async function copyLuaLibraries() {
   console.log("Copying Lua libraries...");
 
-  const luaSrcDir = join(ROOT_DIR, "lua");
-  const luaDistDir = join(DIST_DIR, "lua");
+  const luaSrcDir = join(ROOT_DIR, "lib");
+  const luaDistDir = join(DIST_DIR, "lib");
 
   await mkdir(luaDistDir, { recursive: true });
 
@@ -161,7 +161,7 @@ async function copyLuaLibraries() {
   for (const file of luaFiles) {
     const content = await readFile(join(luaSrcDir, file), "utf-8");
     await writeFile(join(luaDistDir, file), content);
-    console.log(`✓ Copied: dist/lua/${file}`);
+    console.log(`✓ Copied: dist/lib/${file}`);
   }
 }
 
@@ -177,16 +177,10 @@ async function copyConfig() {
 async function copySchema() {
   console.log("Copying schema...");
 
-  const schemaDistDir = join(DIST_DIR, "schema");
-  await mkdir(schemaDistDir, { recursive: true });
+  const schemaContent = await readFile(join(ROOT_DIR, "config.schema.json"), "utf-8");
+  await writeFile(join(DIST_DIR, "config.schema.json"), schemaContent);
 
-  const schemaContent = await readFile(
-    join(ROOT_DIR, "schema/config.schema.json"),
-    "utf-8"
-  );
-  await writeFile(join(schemaDistDir, "config.schema.json"), schemaContent);
-
-  console.log("✓ Copied: dist/schema/config.schema.json");
+  console.log("✓ Copied: dist/config.schema.json");
 }
 
 async function main() {

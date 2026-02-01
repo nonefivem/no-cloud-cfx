@@ -1,4 +1,4 @@
-import type { StorageItemMetadata } from "@common";
+import { Logger, type StorageItemMetadata } from "@common";
 import type {
   FileBody,
   FileMetadata,
@@ -15,6 +15,8 @@ interface RequestSignedUrlParams {
 }
 
 export class StorageManager {
+  private readonly logger = new Logger("StorageManager");
+
   constructor(
     private readonly client: NoCloud,
     private readonly rpc: ServerRPC
@@ -33,11 +35,7 @@ export class StorageManager {
     _: number,
     params: RequestSignedUrlParams
   ): Promise<SignedUrlResponse> {
-    return this.generateSignedUrl(
-      params.contentType,
-      params.size,
-      params.metadata
-    );
+    return this.generateSignedUrl(params.contentType, params.size, params.metadata);
   }
 
   async generateSignedUrl(
@@ -45,21 +43,29 @@ export class StorageManager {
     size: number,
     metadata?: FileMetadata
   ): Promise<SignedUrlResponse> {
+    this.logger.debug(`Generating signed URL for ${contentType} (${size} bytes)`);
     return this.client.storage.generateSignedUrl(contentType, size, metadata);
   }
 
-  async upload(
-    body: FileBody,
-    metadata?: FileMetadata
-  ): Promise<UploadResponse> {
-    return this.client.storage.upload(body, metadata);
+  async upload(body: FileBody, metadata?: FileMetadata): Promise<UploadResponse> {
+    this.logger.debug("Uploading file to storage");
+    const response = await this.client.storage.upload(body, metadata);
+    this.logger.info(`File uploaded successfully: ${response.id}`);
+    return response;
   }
 
   async deleteMedia(mediaId: string | string[]): Promise<boolean> {
     try {
+      this.logger.debug(
+        `Deleting media: ${Array.isArray(mediaId) ? mediaId.join(", ") : mediaId}`
+      );
       await this.client.storage.delete(mediaId);
+      this.logger.info(
+        `Media deleted successfully: ${Array.isArray(mediaId) ? mediaId.join(", ") : mediaId}`
+      );
       return true;
-    } catch {
+    } catch (error) {
+      this.logger.error(`Failed to delete media: ${(error as Error).message}`);
       return false;
     }
   }

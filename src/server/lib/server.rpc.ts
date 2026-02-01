@@ -1,7 +1,8 @@
-import { RPC_TIMEOUT, RPCResponse, RPCTimeoutError } from "@common";
+import { Logger, RPC_TIMEOUT, RPCResponse, RPCTimeoutError } from "@common";
 import { RateLimitManager } from "./rate_limit.manager";
 
 export class ServerRPC {
+  private readonly logger = new Logger("ServerRPC");
   private readonly pendingRequests: Map<
     number,
     { resolve: (value: any) => void; reject: (reason?: any) => void }
@@ -34,11 +35,7 @@ export class ServerRPC {
    * @param params - parameters to send
    * @returns A promise that resolves with the response
    */
-  call<T>(
-    endpoint: string,
-    source: number,
-    payload: Record<string, any>
-  ): Promise<T> {
+  call<T>(endpoint: string, source: number, payload: Record<string, any>): Promise<T> {
     const requestId = this.requestIdCounter++;
 
     return new Promise<T>((resolve, reject) => {
@@ -61,42 +58,39 @@ export class ServerRPC {
     endpoint: string,
     handler: (source: number, payload: T) => Promise<R>
   ): Promise<void> {
-    onNet(
-      `nocloud.rpc.request.${endpoint}`,
-      async (requestId: number, payload: T) => {
-        const source = globalThis.source;
-        const success = this.rateLimitManager.limit(source);
+    onNet(`nocloud.rpc.request.${endpoint}`, async (requestId: number, payload: T) => {
+      const source = globalThis.source;
+      const success = this.rateLimitManager.limit(source);
 
-        if (!success) {
-          const response: RPCResponse<R> = {
-            success: false,
-            error: "Rate limit exceeded"
-          };
-          emitNet(`nocloud.rpc.response`, source, requestId, response);
-          return;
-        }
-
-        let response: RPCResponse<R>;
-
-        try {
-          const result = await handler(source, payload);
-          response = {
-            success: true,
-            data: result
-          };
-        } catch (e) {
-          console.error(
-            `Error handling RPC request for endpoint ${endpoint}:`,
-            e
-          );
-          response = {
-            success: false,
-            error: (e as Error).message || "Unknown error"
-          };
-        }
-
+      if (!success) {
+        const response: RPCResponse<R> = {
+          success: false,
+          error: "Rate limit exceeded"
+        };
         emitNet(`nocloud.rpc.response`, source, requestId, response);
+        return;
       }
-    );
+
+      let response: RPCResponse<R>;
+
+      try {
+        const result = await handler(source, payload);
+        response = {
+          success: true,
+          data: result
+        };
+        this.logger.debug(`RPC request handled successfully for endpoint: ${endpoint}`);
+      } catch (e) {
+        this.logger.error(
+          `Error handling RPC request for endpoint ${endpoint}: ${(e as Error).message}`
+        );
+        response = {
+          success: false,
+          error: (e as Error).message || "Unknown error"
+        };
+      }
+
+      emitNet(`nocloud.rpc.response`, source, requestId, response);
+    });
   }
 }

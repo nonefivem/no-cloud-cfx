@@ -9,13 +9,13 @@
   },
   "dependencies": {
     "@citizenfx/three": "^0.100.0",
-    "@nocloud/sdk": "^0.1.13",
+    "@nocloud/sdk": "^0.1.14",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "@citizenfx/client": "^2.0.23683-1",
     "@citizenfx/server": "^2.0.23683-1",
-    "@types/bun": "^1.3.6",
+    "@types/bun": "^1.3.8",
     "@types/node": "^22.19.7"
   },
   "peerDependencies": {

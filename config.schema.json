@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "config.schema.json",
+  "title": "Cloud Config",
+  "description": "Configuration schema for no-cloud-cfx uploads",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "logging": {
+      "type": "object",
+      "description": "Logging configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether logging is enabled",
+          "default": true
+        },
+        "level": {
+          "type": "string",
+          "description": "Log level",
+          "enum": ["debug", "info", "warn", "error"],
+          "default": "info"
+        }
+      },
+      "required": ["enabled", "level"],
+      "additionalProperties": false
+    },
+    "storage": {
+      "type": "object",
+      "description": "Storage configuration",
+      "properties": {
+        "allowed_file_types": {
+          "type": "array",
+          "description": "List of allowed MIME types for uploads",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]+/[a-z0-9.+-]+$"
+          },
+          "default": ["image/png", "image/jpeg", "image/gif"]
+        },
+        "max_file_size_mb": {
+          "type": "number",
+          "description": "Maximum upload file size in megabytes",
+          "minimum": 1,
+          "default": 50
+        },
+        "rate_limit": {
+          "type": "object",
+          "description": "Rate limiting configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Whether rate limiting is enabled",
+              "default": true
+            },
+            "client_uploads_per_minute": {
+              "type": "integer",
+              "description": "Maximum number of uploads per minute per client",
+              "minimum": 1,
+              "default": 20
+            },
+            "client_identifier_extractor": {
+              "type": "string",
+              "description": "Client identifier type for rate limiting",
+              "enum": ["ip", "license", "ip:license"],
+              "default": "ip:license"
+            }
+          },
+          "required": [
+            "enabled",
+            "client_uploads_per_minute",
+            "client_identifier_extractor"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": ["allowed_file_types", "max_file_size_mb", "rate_limit"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["logging", "storage"],
+  "additionalProperties": false
+}
