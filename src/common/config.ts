@@ -2,7 +2,7 @@ import { Config } from "./types";
 
 function loadConfig(): Config {
   try {
-    const config = LoadResourceFile(GetCurrentResourceName(), "cloud.config.json");
+    const config = LoadResourceFile(GetCurrentResourceName(), "config.json");
 
     if (!config) {
       throw new Error("Configuration file not found");
@@ -11,7 +11,7 @@ function loadConfig(): Config {
     return JSON.parse(config) as Config;
   } catch (error) {
     console.warn(
-      "[NoCloud] [WARN]: Could not load cloud.config.json, using default configuration.",
+      "[NoCloud] [WARN]: Could not load config.json, using default configuration.",
       (error as Error).message
     );
     // Return defaults if config file doesn't exist

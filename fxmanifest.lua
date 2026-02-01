@@ -14,7 +14,7 @@ server_script "server.js"
 ui_page "web/index.html"
 
 files {
-    "cloud.config.json",
+    "config.json",
     "web/index.html",
     "web/index.js",
     "web/index.css"
