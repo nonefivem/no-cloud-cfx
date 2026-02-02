@@ -1,11 +1,11 @@
-import NoCloud from "@nocloud/sdk";
 import { Logger } from "@common";
+import NoCloud from "@nocloud/sdk";
+import fetch from "node-fetch";
 import { ServerExportsManager } from "./exports";
 import { RateLimitManager } from "./lib/rate_limit.manager";
 import { ServerRPC } from "./lib/server.rpc";
+import { checkForUpdatesAndLog } from "./lib/version.checker";
 import { StorageManager } from "./storage";
-
-import fetch from "node-fetch";
 
 const logger = new Logger("Server");
 
@@ -36,6 +36,7 @@ function main() {
 
   exportsManager.init();
 
+  setTimeout(checkForUpdatesAndLog, 2000);
   logger.info("NoCloud server initialized successfully");
 }
 
