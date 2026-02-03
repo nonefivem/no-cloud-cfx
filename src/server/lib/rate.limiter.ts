@@ -5,23 +5,29 @@ interface RateLimit {
   current: number;
 }
 
-interface RateLimitOptions {
+interface RateLimiterOptions {
+  name: string;
   maxRequests: number;
   windowMs: number;
   clientIdentifier: string;
 }
 
-const DEFAULT_RATE_LIMIT_OPTIONS: RateLimitOptions = {
+const DEFAULT_RATE_LIMIT_OPTIONS: RateLimiterOptions = {
+  name: "default",
   maxRequests: 10,
   windowMs: 60000, // 1 minute
   clientIdentifier: "ip:license"
 };
 
-export class RateLimitManager {
-  private readonly logger = new Logger("RateLimitManager");
+export class RateLimiter {
+  private readonly logger: Logger;
   private readonly limits: Map<string, RateLimit> = new Map();
 
-  constructor(private readonly options: RateLimitOptions = DEFAULT_RATE_LIMIT_OPTIONS) {}
+  constructor(
+    private readonly options: RateLimiterOptions = DEFAULT_RATE_LIMIT_OPTIONS
+  ) {
+    this.logger = new Logger(`RateLimiter<${this.options.name}>`);
+  }
 
   /**
    * Resolves the client identifier string based on the provided key.
@@ -32,7 +38,9 @@ export class RateLimitManager {
     if (typeof key === "number") {
       key = this.options.clientIdentifier
         .split(":")
-        .map(part => GetPlayerIdentifierByType(key.toString(), part.toLowerCase()))
+        .map((part) =>
+          GetPlayerIdentifierByType(key.toString(), part.toLowerCase())
+        )
         .join(":");
     }
 
@@ -95,7 +103,7 @@ export class RateLimitManager {
    * Clears all rate limits.
    */
   clear() {
-    this.limits.forEach(limit => clearTimeout(limit.timeout));
+    this.limits.forEach((limit) => clearTimeout(limit.timeout));
     this.limits.clear();
   }
 }

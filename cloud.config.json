@@ -5,11 +5,24 @@
     "level": "info"
   },
   "storage": {
-    "allowed_file_types": ["image/png", "image/jpeg", "image/gif"],
+    "enable_client_uploads": true,
     "max_file_size_mb": 50,
+    "allowed_file_types": [
+      "text/plain",
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+      "image/svg+xml",
+      "video/mp4",
+      "video/webm",
+      "audio/mpeg",
+      "audio/wav"
+    ],
     "rate_limit": {
       "enabled": true,
-      "client_uploads_per_minute": 20,
+      "window_ms": 60000,
+      "max_requests": 10,
       "client_identifier_extractor": "ip:license"
     }
   }

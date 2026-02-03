@@ -2,7 +2,6 @@ import { Logger } from "@common";
 import NoCloud from "@nocloud/sdk";
 import fetch from "node-fetch";
 import { ServerExportsManager } from "./exports";
-import { RateLimitManager } from "./lib/rate_limit.manager";
 import { ServerRPC } from "./lib/server.rpc";
 import { checkForUpdatesAndLog } from "./lib/version.checker";
 import { StorageManager } from "./storage";
@@ -29,8 +28,7 @@ function main() {
   logger.info("Initializing NoCloud server...");
 
   const client = new NoCloud(extractApiKey());
-  const rateLimitManager = new RateLimitManager();
-  const rpc = new ServerRPC(rateLimitManager);
+  const rpc = new ServerRPC();
   const storageManager = new StorageManager(client, rpc);
   const exportsManager = new ServerExportsManager(rpc, storageManager);
 

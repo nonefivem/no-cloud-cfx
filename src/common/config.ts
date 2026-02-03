@@ -22,11 +22,23 @@ function loadConfig(): Config {
       },
       storage: {
         enable_client_uploads: true,
-        allowed_file_types: ["image/png", "image/jpeg", "image/gif"],
+        allowed_file_types: [
+          "text/plain",
+          "image/jpeg",
+          "image/png",
+          "image/gif",
+          "image/webp",
+          "image/svg+xml",
+          "video/mp4",
+          "video/webm",
+          "audio/mpeg",
+          "audio/wav"
+        ],
         max_file_size_mb: 50,
         rate_limit: {
           enabled: true,
-          client_uploads_per_minute: 20,
+          window_ms: 60000,
+          max_requests: 20,
           client_identifier_extractor: "ip:license"
         }
       }
