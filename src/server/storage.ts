@@ -16,6 +16,8 @@ interface RequestSignedUrlParams {
 }
 
 export class StorageManager {
+  private readonly MAX_FILE_SIZE_BYTES =
+    config.storage.max_file_size_mb * 1024 * 1024;
   private readonly logger = new Logger("StorageManager");
   private readonly rateLimiter = new RateLimiter({
     name: "storage",
@@ -63,6 +65,16 @@ export class StorageManager {
     this.logger.debug(
       `Generating signed URL for ${contentType} (${size} bytes)`
     );
+
+    if (size > this.MAX_FILE_SIZE_BYTES) {
+      this.logger.warn(
+        `Upload size ${size} exceeds maximum allowed size of ${this.MAX_FILE_SIZE_BYTES} bytes`
+      );
+      throw new Error(
+        `File size exceeds the maximum allowed limit of ${this.MAX_FILE_SIZE_BYTES} bytes.`
+      );
+    }
+
     return this.client.storage.generateSignedUrl(contentType, size, metadata);
   }
 
