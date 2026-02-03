@@ -50,6 +50,15 @@ export class StorageManager {
       throw new Error("Rate limit exceeded. Please try again later.");
     }
 
+    if (params.size > this.MAX_FILE_SIZE_BYTES) {
+      this.logger.warn(
+        `Upload size ${params.size} exceeds maximum allowed size of ${this.MAX_FILE_SIZE_BYTES} bytes`
+      );
+      throw new Error(
+        `File size exceeds the maximum allowed limit of ${this.MAX_FILE_SIZE_BYTES} bytes.`
+      );
+    }
+
     return this.generateSignedUrl(
       params.contentType,
       params.size,
@@ -65,16 +74,6 @@ export class StorageManager {
     this.logger.debug(
       `Generating signed URL for ${contentType} (${size} bytes)`
     );
-
-    if (size > this.MAX_FILE_SIZE_BYTES) {
-      this.logger.warn(
-        `Upload size ${size} exceeds maximum allowed size of ${this.MAX_FILE_SIZE_BYTES} bytes`
-      );
-      throw new Error(
-        `File size exceeds the maximum allowed limit of ${this.MAX_FILE_SIZE_BYTES} bytes.`
-      );
-    }
-
     return this.client.storage.generateSignedUrl(contentType, size, metadata);
   }
 
