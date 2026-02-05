@@ -27,61 +27,36 @@ NoCloud CFX SDK provides seamless integration with the NoCloud platform, enablin
 
 ## Installation
 
-### Option 1: Download Release (Recommended)
+### 1. Download the SDK
 
-Download the latest release from [GitHub Releases](https://github.com/NoneM/no-cloud-cfx/releases):
+Download the latest release from [GitHub Releases](https://github.com/nonefivem/no-cloud-cfx/releases).
 
-- **`nocloud-v*.zip`** - Production build (minified)
-- **`nocloud-v*-dev.zip`** - Development build (non-minified, with sourcemaps)
+### 2. Extract to Resources
 
-Extract to your `resources` folder and add to your `server.cfg`:
+Unzip the downloaded file and place the `nocloud` folder into your server's `resources` directory.
+
+```
+resources/
+└── nocloud/
+```
+
+### 3. Configure server.cfg
+
+Add the following line to your `server.cfg` to ensure the resource starts:
 
 ```cfg
 ensure nocloud
 ```
 
-### Option 2: Build from Source
+### 4. Set API Key
 
-```bash
-# Clone the repository
-git clone https://github.com/NoneM/no-cloud-cfx.git
-cd no-cloud-cfx
+Add your NoCloud API key to your `server.cfg`:
 
-# Install dependencies
-bun install
-
-# Build
-bun run build
+```cfg
+set NOCLOUD_API_KEY "your_api_key"
 ```
 
-## Building
-
-```bash
-# Production build (minified, external sourcemaps)
-bun run build
-
-# Development build (no minify, inline sourcemaps)
-bun run build --no-minify --sourcemap=inline
-
-# No sourcemaps
-bun run build --sourcemap=none
-```
-
-### Build Output
-
-```
-dist/
-├── client.js       # CFX client script
-├── server.js       # CFX server script
-└── web/
-    ├── index.html  # NUI page
-    ├── index.js    # NUI script
-    └── index.css   # NUI styles
-
-lib/
-├── client.lua      # Lua client library (type-annotated)
-└── server.lua      # Lua server library (type-annotated)
-```
+> **Note:** You can get your API key from the [NoCloud Dashboard](https://dash.nonefivem.com).
 
 ## Usage
 
@@ -89,9 +64,8 @@ lib/
 
 ```lua
 -- Take a screenshot and upload to cloud storage
-local result = exports['nocloud']:TakeImage({
-    category = 'screenshots',
-    playerId = GetPlayerServerId(PlayerId())
+local result = exports.cloud:TakeImage({
+    reason = "mugshot"
 })
 
 if result then
@@ -100,8 +74,8 @@ if result then
 end
 
 -- Generate a signed URL for client-side uploads
-local signedUrl = exports['nocloud']:GenerateSignedUrl('image/png', 1024, {
-    category = 'uploads'
+local signedUrl = exports.nocloud:GenerateSignedUrl('image/png', 1024, {
+    location = json.encode(GetPlayerCoords(PlayerPedId()))
 })
 ```
 
@@ -109,17 +83,17 @@ local signedUrl = exports['nocloud']:GenerateSignedUrl('image/png', 1024, {
 
 ```lua
 -- Generate a signed URL for uploading
-local signedUrl = exports['nocloud']:GenerateSignedUrl('image/png', 1024, {
-    category = 'uploads'
+local signedUrl = exports.nocloud:GenerateSignedUrl('image/png', 1024, {
+    player_id = 1
 })
 
 -- Upload a file directly (base64 or raw data)
-local result = exports['nocloud']:UploadMedia(base64Data, {
-    category = 'files'
+local result = exports.nocloud:UploadMedia(base64Data, {
+    player_id = 1
 })
 
 -- Delete a file from storage
-local success = exports['nocloud']:DeleteMedia(mediaId)
+local success = exports.nocloud:DeleteMedia(mediaId)
 ```
 
 ### Lua Libraries
@@ -138,7 +112,7 @@ server_script '@nocloud/lib/server.lua'
 
 ```lua
 -- Cloud global is available after including the library
-local result = Cloud.storage:take_image({ category = 'screenshots' })
+local result = Cloud.storage:take_image({ type = 'screenshot' })
 if result then
     print('Uploaded:', result.url)
 end
@@ -159,34 +133,11 @@ local result = Cloud.storage:upload(base64Data, { category = 'files' })
 local success = Cloud.storage:delete_media(mediaId)
 ```
 
-## Project Structure
-
-```
-src/
-├── client/          # CFX client-side code
-│   ├── index.ts     # Entry point
-│   ├── exports.ts   # Exported functions
-│   ├── nui.ts       # NUI communication
-│   └── lib/         # Client utilities
-├── server/          # CFX server-side code
-│   ├── index.ts     # Entry point
-│   └── lib/         # Server utilities
-├── common/          # Shared types and utilities
-│   ├── index.ts
-│   ├── types.ts
-│   └── rpc.ts
-└── web/             # NUI (browser)
-    ├── index.html
-    ├── app.ts
-    ├── NoCloudApp.ts  # Screenshot capture logic
-    └── styles.css
-```
-
 ## Links
 
 - 🌐 [NoneM Website](https://nonefivem.com)
 - 📚 [Documentation](https://docs.nonefivem.com)
-- 💬 [Discord](https://discord.com/invite/K9SEZ7HeaR)
+- 💬 [Discord](https://discord.nonefivem.com)
 
 ## License
 
