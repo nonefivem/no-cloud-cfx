@@ -1,13 +1,13 @@
 import { config, Logger, type StorageItemMetadata } from "@common";
 import type {
   FileBody,
-  FileMetadata,
   NoCloud,
   SignedUrlResponse,
   UploadResponse
 } from "@nocloud/sdk";
 import { RateLimiter } from "./lib/rate.limiter";
 import { ServerRPC } from "./lib/server.rpc";
+import { extractPlayerIdentifier } from "./lib/utils";
 
 interface RequestSignedUrlParams {
   contentType: string;
@@ -21,7 +21,7 @@ export class StorageManager {
   private readonly logger = new Logger("StorageManager");
   private readonly rateLimiter = new RateLimiter({
     name: "storage",
-    clientIdentifier: config.storage.rate_limit.client_identifier_extractor,
+    clientIdentifier: config.client_identifier_extractor,
     maxRequests: config.storage.rate_limit.max_requests,
     windowMs: config.storage.rate_limit.window_ms
   });
@@ -39,6 +39,23 @@ export class StorageManager {
     } else {
       this.logger.info("Client uploads are disabled in the configuration");
     }
+  }
+
+  private populateMetadataAttachments(
+    metadata?: StorageItemMetadata,
+    player_id?: number
+  ): StorageItemMetadata | undefined {
+    if (config.storage.metadata_attachments.resource) {
+      metadata = metadata || {};
+      metadata.resource = metadata.resource || GetInvokingResource();
+    }
+
+    if (config.storage.metadata_attachments.player && player_id !== undefined) {
+      metadata = metadata || {};
+      metadata.player = metadata.player || extractPlayerIdentifier(player_id);
+    }
+
+    return metadata;
   }
 
   private async handleRequestSignedUrl(
@@ -62,27 +79,35 @@ export class StorageManager {
     return this.generateSignedUrl(
       params.contentType,
       params.size,
-      params.metadata
+      this.populateMetadataAttachments(params.metadata, player_id)
     );
   }
 
   async generateSignedUrl(
     contentType: string,
     size: number,
-    metadata?: FileMetadata
+    metadata?: StorageItemMetadata
   ): Promise<SignedUrlResponse> {
     this.logger.debug(
       `Generating signed URL for ${contentType} (${size} bytes)`
     );
-    return this.client.storage.generateSignedUrl(contentType, size, metadata);
+
+    return this.client.storage.generateSignedUrl(
+      contentType,
+      size,
+      this.populateMetadataAttachments(metadata)
+    );
   }
 
   async upload(
     body: FileBody,
-    metadata?: FileMetadata
+    metadata?: StorageItemMetadata
   ): Promise<UploadResponse> {
     this.logger.debug("Uploading file to storage");
-    const response = await this.client.storage.upload(body, metadata);
+    const response = await this.client.storage.upload(
+      body,
+      this.populateMetadataAttachments(metadata)
+    );
     this.logger.info(`File uploaded successfully: ${response.id}`);
     return response;
   }

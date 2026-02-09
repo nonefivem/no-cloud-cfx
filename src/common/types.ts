@@ -8,8 +8,6 @@ interface RateLimitConfig {
   window_ms: number;
   /** Maximum number of requests allowed within the window */
   max_requests: number;
-  /** Client identifier extractor string */
-  client_identifier_extractor: string;
 }
 
 interface LoggingConfig {
@@ -19,6 +17,13 @@ interface LoggingConfig {
   level: LoggingLevel;
 }
 
+interface MetadataAttachmentConfig {
+  /** Whether to attach resource name to file metadata */
+  resource: boolean;
+  /** Whether to attach player identifier to file metadata */
+  player: boolean;
+}
+
 interface StorageConfig {
   /** Whether client uploads are enabled */
   enable_client_uploads: boolean;
@@ -26,11 +31,16 @@ interface StorageConfig {
   allowed_file_types: string[];
   /** Maximum upload file size in megabytes */
   max_file_size_mb: number;
+  /** Rate limiting configuration */
   rate_limit: RateLimitConfig;
+  /** Metadata attachment configuration */
+  metadata_attachments: MetadataAttachmentConfig;
 }
 
 /** Shared configuration */
 export interface Config {
+  /** Client identifier extractor string */
+  client_identifier_extractor: string;
   logging: LoggingConfig;
   storage: StorageConfig;
 }

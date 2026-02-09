@@ -16,12 +16,14 @@ function loadConfig(): Config {
     );
     // Return defaults if config file doesn't exist
     return {
+      client_identifier_extractor: "ip:license",
       logging: {
         enabled: true,
         level: "info"
       },
       storage: {
         enable_client_uploads: true,
+        max_file_size_mb: 50,
         allowed_file_types: [
           "text/plain",
           "image/jpeg",
@@ -34,12 +36,14 @@ function loadConfig(): Config {
           "audio/mpeg",
           "audio/wav"
         ],
-        max_file_size_mb: 50,
+        metadata_attachments: {
+          resource: true,
+          player: true
+        },
         rate_limit: {
           enabled: true,
           window_ms: 60000,
-          max_requests: 20,
-          client_identifier_extractor: "ip:license"
+          max_requests: 20
         }
       }
     };

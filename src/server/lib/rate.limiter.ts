@@ -1,4 +1,5 @@
 import { Logger } from "@common";
+import { extractPlayerIdentifier } from "./utils";
 
 interface RateLimit {
   timeout: NodeJS.Timeout;
@@ -36,12 +37,7 @@ export class RateLimiter {
    */
   private resolveClientIdentifier(key: string | number) {
     if (typeof key === "number") {
-      key = this.options.clientIdentifier
-        .split(":")
-        .map((part) =>
-          GetPlayerIdentifierByType(key.toString(), part.toLowerCase())
-        )
-        .join(":");
+      key = extractPlayerIdentifier(key);
     }
 
     return key;

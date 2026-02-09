@@ -1,5 +1,6 @@
 {
   "$schema": "./config.schema.json",
+  "client_identifier_extractor": "ip:license",
   "logging": {
     "enabled": true,
     "level": "info"
@@ -19,11 +20,14 @@
       "audio/mpeg",
       "audio/wav"
     ],
+    "metadata_attachments": {
+      "resource": true,
+      "player": true
+    },
     "rate_limit": {
       "enabled": true,
       "window_ms": 60000,
-      "max_requests": 10,
-      "client_identifier_extractor": "ip:license"
+      "max_requests": 15
     }
   }
 }
