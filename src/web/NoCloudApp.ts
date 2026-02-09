@@ -155,6 +155,8 @@ export abstract class NoCloudApp {
     this.resourceName = this.getResourceName();
     this.setupNuiListener();
     this.init();
+    // Warm up the texture to avoid black screenshots on first attempt
+    setTimeout(getGameTexture, 1000);
   }
 
   /**
