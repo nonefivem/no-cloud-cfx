@@ -1,4 +1,6 @@
-import { ClientRPC } from "./lib/client.rpc";
+import { StorageItemMetadata } from "@common";
+import { populateMetadataAttachments } from "../common/utils";
+import { ClientRPC, RequestSignedUrlParams } from "./lib/client.rpc";
 import { NUIManager } from "./nui";
 
 export class ClientExportsManager {
@@ -9,11 +11,23 @@ export class ClientExportsManager {
     private readonly nuiManager: NUIManager
   ) {}
 
+  private handleTakeImage(metadata?: StorageItemMetadata) {
+    return this.nuiManager.takeImage(populateMetadataAttachments(metadata));
+  }
+
+  private handleRequestSignedUrl(payload: RequestSignedUrlParams) {
+    payload.metadata = populateMetadataAttachments(payload.metadata);
+    return this.rpc.requestSignedUrl(payload);
+  }
+
   init() {
     if (this.initialized) return;
     this.initialized = true;
 
-    globalThis.exports("TakeImage", this.nuiManager.takeImage.bind(this.nuiManager));
-    globalThis.exports("RequestSignedUrl", this.rpc.requestSignedUrl.bind(this.rpc));
+    globalThis.exports("TakeImage", this.handleTakeImage.bind(this));
+    globalThis.exports(
+      "RequestSignedUrl",
+      this.handleRequestSignedUrl.bind(this)
+    );
   }
 }

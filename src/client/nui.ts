@@ -1,12 +1,6 @@
 import { Logger, type StorageItemMetadata } from "@common";
 import { SignedUrlResponse } from "@nocloud/sdk";
-import { ClientRPC } from "./lib/client.rpc";
-
-interface RequestSignedUrlParams {
-  contentType: string;
-  size: number;
-  metadata?: StorageItemMetadata;
-}
+import { ClientRPC, RequestSignedUrlParams } from "./lib/client.rpc";
 
 interface UploadedImage {
   id: string;
@@ -65,7 +59,9 @@ export class NUIManager {
       this.logger.debug("Signed URL received successfully");
       cb({ ok: true, payload });
     } catch (e) {
-      this.logger.error(`Failed to request signed URL: ${(e as Error).message}`);
+      this.logger.error(
+        `Failed to request signed URL: ${(e as Error).message}`
+      );
       cb({ ok: false, url: null, message: (e as Error).message });
     }
   }
@@ -109,7 +105,9 @@ export class NUIManager {
       setTimeout(() => {
         if (this.pendingRequests.has(requestId)) {
           this.pendingRequests.delete(requestId);
-          this.logger.warn(`Image capture timed out for requestId: ${requestId}`);
+          this.logger.warn(
+            `Image capture timed out for requestId: ${requestId}`
+          );
           reject(new Error("Image capture timed out"));
         }
       }, 60_000); // 60 seconds timeout

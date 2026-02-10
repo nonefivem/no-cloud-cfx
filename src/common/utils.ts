@@ -1,4 +1,5 @@
-import { config } from "@common";
+import { config } from "./config";
+import { StorageItemMetadata } from "./types";
 
 const masked_identifiers = ["ip"];
 
@@ -21,4 +22,22 @@ export function extractPlayerIdentifier(player: number, mask = false): string {
         : identifier;
     })
     .join(":");
+}
+
+export function populateMetadataAttachments(
+  metadata?: StorageItemMetadata,
+  player_id?: number
+): StorageItemMetadata | undefined {
+  if (config.storage.metadata_attachments.resource) {
+    metadata = metadata || {};
+    metadata.resource = metadata.resource || GetInvokingResource();
+  }
+
+  if (player_id && config.storage.metadata_attachments.player) {
+    metadata = metadata || {};
+    metadata.player =
+      metadata.player || extractPlayerIdentifier(player_id, true);
+  }
+
+  return metadata;
 }

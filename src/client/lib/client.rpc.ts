@@ -8,7 +8,7 @@ import {
 } from "@common";
 import { SignedUrlResponse } from "@nocloud/sdk";
 
-interface RequestSignedUrlParams {
+export interface RequestSignedUrlParams {
   contentType: string;
   size: number;
   metadata?: StorageItemMetadata;
@@ -115,12 +115,6 @@ export class ClientRPC {
       return Promise.reject(
         new Error("Client uploads are disabled in the configuration.")
       );
-    }
-
-    if (config.storage.metadata_attachments.resource) {
-      payload.metadata = payload.metadata || {};
-      payload.metadata.resource =
-        payload.metadata.resource || GetInvokingResource();
     }
 
     return this.call<SignedUrlResponse>("storage.requestSignedUrl", payload);

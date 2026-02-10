@@ -5,9 +5,9 @@ import type {
   SignedUrlResponse,
   UploadResponse
 } from "@nocloud/sdk";
+import { populateMetadataAttachments } from "../common/utils";
 import { RateLimiter } from "./lib/rate.limiter";
 import { ServerRPC } from "./lib/server.rpc";
-import { extractPlayerIdentifier } from "./lib/utils";
 
 interface RequestSignedUrlParams {
   contentType: string;
@@ -41,24 +41,6 @@ export class StorageManager {
     }
   }
 
-  private populateMetadataAttachments(
-    metadata?: StorageItemMetadata,
-    player_id?: number
-  ): StorageItemMetadata | undefined {
-    if (config.storage.metadata_attachments.resource) {
-      metadata = metadata || {};
-      metadata.resource = metadata.resource || GetInvokingResource();
-    }
-
-    if (config.storage.metadata_attachments.player && player_id !== undefined) {
-      metadata = metadata || {};
-      metadata.player =
-        metadata.player || extractPlayerIdentifier(player_id, true);
-    }
-
-    return metadata;
-  }
-
   private async handleRequestSignedUrl(
     player_id: number,
     params: RequestSignedUrlParams
@@ -80,7 +62,7 @@ export class StorageManager {
     return this.generateSignedUrl(
       params.contentType,
       params.size,
-      this.populateMetadataAttachments(params.metadata, player_id)
+      populateMetadataAttachments(params.metadata, player_id)
     );
   }
 
@@ -96,7 +78,7 @@ export class StorageManager {
     return this.client.storage.generateSignedUrl(
       contentType,
       size,
-      this.populateMetadataAttachments(metadata)
+      populateMetadataAttachments(metadata)
     );
   }
 
@@ -107,7 +89,7 @@ export class StorageManager {
     this.logger.debug("Uploading file to storage");
     const response = await this.client.storage.upload(
       body,
-      this.populateMetadataAttachments(metadata)
+      populateMetadataAttachments(metadata)
     );
     this.logger.info(`File uploaded successfully: ${response.id}`);
     return response;

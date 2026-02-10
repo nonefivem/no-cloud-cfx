@@ -1,7 +1,11 @@
+import { config, StorageItemMetadata } from "@common";
 import type { UploadResponse } from "@nocloud/sdk";
+import {
+  extractPlayerIdentifier,
+  populateMetadataAttachments
+} from "../common/utils";
 import { ServerRPC } from "./lib/server.rpc";
 import type { StorageManager } from "./storage";
-import { StorageItemMetadata } from "@common";
 
 export class ServerExportsManager {
   private initialized = false;
@@ -15,7 +19,11 @@ export class ServerExportsManager {
     playerId: number,
     metadata?: StorageItemMetadata
   ): Promise<UploadResponse> {
-    return this.rpc.call<UploadResponse>("storage.takeImage", playerId, metadata || {});
+    return this.rpc.call<UploadResponse>(
+      "storage.takeImage",
+      playerId,
+      populateMetadataAttachments(metadata, playerId) ?? {}
+    );
   }
 
   init() {
@@ -28,6 +36,9 @@ export class ServerExportsManager {
       this.storage.generateSignedUrl.bind(this.storage)
     );
     globalThis.exports("UploadMedia", this.storage.upload.bind(this.storage));
-    globalThis.exports("DeleteMedia", this.storage.deleteMedia.bind(this.storage));
+    globalThis.exports(
+      "DeleteMedia",
+      this.storage.deleteMedia.bind(this.storage)
+    );
   }
 }
