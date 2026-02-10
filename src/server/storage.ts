@@ -52,7 +52,8 @@ export class StorageManager {
 
     if (config.storage.metadata_attachments.player && player_id !== undefined) {
       metadata = metadata || {};
-      metadata.player = metadata.player || extractPlayerIdentifier(player_id);
+      metadata.player =
+        metadata.player || extractPlayerIdentifier(player_id, true);
     }
 
     return metadata;
