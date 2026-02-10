@@ -1,9 +1,6 @@
-import { config, StorageItemMetadata } from "@common";
+import { StorageItemMetadata } from "@common";
 import type { UploadResponse } from "@nocloud/sdk";
-import {
-  extractPlayerIdentifier,
-  populateMetadataAttachments
-} from "../common/utils";
+import { populateMetadataAttachments } from "../common/utils";
 import { ServerRPC } from "./lib/server.rpc";
 import type { StorageManager } from "./storage";
 

@@ -37,6 +37,7 @@ function loadConfig(): Config {
           "audio/wav"
         ],
         metadata_attachments: {
+          masked_identifiers: ["ip"],
           resource: true,
           player: true
         },

@@ -18,6 +18,8 @@ interface LoggingConfig {
 }
 
 interface MetadataAttachmentConfig {
+  /** List of client identifiers to mask in metadata (ip is always masked, e.g. ip, license, steam) */
+  masked_identifiers: string[];
   /** Whether to attach resource name to file metadata */
   resource: boolean;
   /** Whether to attach player identifier to file metadata */

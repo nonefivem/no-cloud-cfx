@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "config.schema.json",
-  "title": "Cloud Config",
-  "description": "Configuration schema for no-cloud-cfx uploads",
+  "title": "NoCloud CFX Config",
+  "description": "Configuration schema for no-cloud-cfx",
   "type": "object",
   "properties": {
     "$schema": {
@@ -11,8 +11,9 @@
     },
     "client_identifier_extractor": {
       "type": "string",
-      "description": "Client identifier extractor method (ip, license, steam etc or combination like ip:license)",
-      "default": "ip:license"
+      "description": "Client identifier extractor method used in rate limiting and metadata attachments. (ip, license, steam etc or combination like ip:license)",
+      "default": "ip:license",
+      "pattern": "^(ip|steam|discord|license|license2|fivem|xbl|live)(:(ip|steam|discord|license|license2|fivem|xbl|live))*$"
     },
     "logging": {
       "type": "object",
@@ -41,6 +42,24 @@
           "type": "object",
           "description": "Metadata attachment configuration",
           "properties": {
+            "masked_identifiers": {
+              "type": "array",
+              "description": "List of client identifiers to mask in metadata (ip is always masked, identifier will be retrieved based on client_identifier_extractor)",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ip",
+                  "steam",
+                  "discord",
+                  "license",
+                  "license2",
+                  "fivem",
+                  "xbl",
+                  "live"
+                ]
+              },
+              "default": ["ip"]
+            },
             "resource": {
               "type": "boolean",
               "description": "Whether to attach resource name to file metadata",
@@ -52,7 +71,7 @@
               "default": true
             }
           },
-          "required": ["resource", "player"],
+          "required": ["masked_identifiers", "resource", "player"],
           "additionalProperties": false
         },
         "enable_client_uploads": {
