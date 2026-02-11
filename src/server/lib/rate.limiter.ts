@@ -1,5 +1,5 @@
 import { Logger } from "@common";
-import { extractPlayerIdentifier } from "./utils";
+import { extractPlayerIdentifier } from "../../common/utils";
 
 interface RateLimit {
   timeout: NodeJS.Timeout;
@@ -24,9 +24,7 @@ export class RateLimiter {
   private readonly logger: Logger;
   private readonly limits: Map<string, RateLimit> = new Map();
 
-  constructor(
-    private readonly options: RateLimiterOptions = DEFAULT_RATE_LIMIT_OPTIONS
-  ) {
+  constructor(private readonly options: RateLimiterOptions = DEFAULT_RATE_LIMIT_OPTIONS) {
     this.logger = new Logger(`RateLimiter<${this.options.name}>`);
   }
 
@@ -99,7 +97,7 @@ export class RateLimiter {
    * Clears all rate limits.
    */
   clear() {
-    this.limits.forEach((limit) => clearTimeout(limit.timeout));
+    this.limits.forEach(limit => clearTimeout(limit.timeout));
     this.limits.clear();
   }
 }
