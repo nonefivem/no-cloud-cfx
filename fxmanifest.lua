@@ -5,7 +5,7 @@ node_version "22"
 name "nocloud"
 description "NoCloud FiveM SDK - Serverless storage and screenshot capture"
 author "NoneM"
-version "0.1.0"
+version "0.1.1"
 url "https://dash.nonefivem.com"
 
 client_script "client.js"
