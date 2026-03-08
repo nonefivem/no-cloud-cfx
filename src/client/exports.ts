@@ -1,6 +1,6 @@
 import { StorageItemMetadata } from "@common";
 import { populateMetadataAttachments } from "../common/utils";
-import { ClientRPC, RequestSignedUrlParams } from "./lib/client.rpc";
+import { ClientRPC } from "./lib/client.rpc";
 import { NUIManager } from "./nui";
 
 export class ClientExportsManager {
@@ -15,9 +15,16 @@ export class ClientExportsManager {
     return this.nuiManager.takeImage(populateMetadataAttachments(metadata));
   }
 
-  private handleRequestSignedUrl(payload: RequestSignedUrlParams) {
-    payload.metadata = populateMetadataAttachments(payload.metadata);
-    return this.rpc.requestSignedUrl(payload);
+  private handleRequestSignedUrl(
+    contentType?: string,
+    size?: number,
+    metadata?: StorageItemMetadata
+  ) {
+    return this.rpc.requestSignedUrl({
+      contentType,
+      size,
+      metadata: populateMetadataAttachments(metadata)
+    });
   }
 
   init() {

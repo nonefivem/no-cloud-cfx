@@ -9,8 +9,8 @@ import {
 import { SignedUrlResponse } from "@nocloud/sdk";
 
 export interface RequestSignedUrlParams {
-  contentType: string;
-  size: number;
+  contentType?: string;
+  size?: number;
   metadata?: StorageItemMetadata;
 }
 

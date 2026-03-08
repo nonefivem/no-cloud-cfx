@@ -7,12 +7,12 @@ local nocloud = exports.nocloud
 ---@class SignedUrlResponse
 ---@field public url string The signed URL for uploading
 ---@field public expiresAt string Expiration time in ISO 8601 format
----@field public mediaId string The unique identifier for the media after upload
----@field public mediaUrl string The public URL to access the media after upload
+---@field public mediaId? string The unique identifier for the media after upload (pre-allocated only)
+---@field public mediaUrl? string The public URL to access the media after upload (pre-allocated only)
 
 ---@class CloudStorage
 ---@field take_image fun(self, player_id: number, metadata?: table): UploadResponse? Screenshot upload
----@field generate_signed_url fun(self, contentType: string, size: number, metadata?: table): SignedUrlResponse? Generate signed URL for uploads
+---@field generate_signed_url fun(self, contentType?: string, size?: number, metadata?: table): SignedUrlResponse? Generate signed URL for uploads
 ---@field upload fun(self, body: string, metadata?: table): UploadResponse? Upload file
 ---@field upload_stream fun(self, stream: any, contentType: string, contentLength: number, metadata?: table): UploadResponse? Upload stream
 ---@field delete_media fun(self, mediaId: string|string[]): boolean Delete file
@@ -32,9 +32,11 @@ function Cloud.storage:take_image(player_id, metadata)
 end
 
 --- Generates a signed URL for uploading a file.
----@param contentType string The MIME type of the file
----@param size number The size of the file in bytes
----@param metadata? table Optional metadata for the file
+--- When called with contentType and size, returns a pre-allocated URL with mediaId and mediaUrl.
+--- When called without options, returns a non-allocated URL with just url and expiresAt.
+---@param contentType? string The MIME type of the file
+---@param size? number The size of the file in bytes
+---@param metadata? table Optional metadata for the file (only used with pre-allocated)
 ---@return SignedUrlResponse? response Response containing the signed URL and media info
 function Cloud.storage:generate_signed_url(contentType, size, metadata)
     return nocloud:GenerateSignedUrl(contentType, size, metadata)

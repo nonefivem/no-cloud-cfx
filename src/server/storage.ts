@@ -2,6 +2,7 @@ import { config, Logger, type StorageItemMetadata } from "@common";
 import type {
   FileBody,
   NoCloud,
+  PreAllocatedSignedUrlResponse,
   SignedUrlResponse,
   UploadResponse
 } from "@nocloud/sdk";
@@ -10,8 +11,8 @@ import { RateLimiter } from "./lib/rate.limiter";
 import { ServerRPC } from "./lib/server.rpc";
 
 interface RequestSignedUrlParams {
-  contentType: string;
-  size: number;
+  contentType?: string;
+  size?: number;
   metadata?: StorageItemMetadata;
 }
 
@@ -44,42 +45,56 @@ export class StorageManager {
   private async handleRequestSignedUrl(
     player_id: number,
     params: RequestSignedUrlParams
-  ): Promise<SignedUrlResponse> {
+  ): Promise<SignedUrlResponse | PreAllocatedSignedUrlResponse> {
     if (!this.rateLimiter.limit(player_id)) {
       this.logger.warn(`Rate limit exceeded for player ID: ${player_id}`);
       throw new Error("Rate limit exceeded. Please try again later.");
     }
 
-    if (params.size > this.MAX_FILE_SIZE_BYTES) {
-      this.logger.warn(
-        `Upload size ${params.size} exceeds maximum allowed size of ${this.MAX_FILE_SIZE_BYTES} bytes`
-      );
-      throw new Error(
-        `File size exceeds the maximum allowed limit of ${this.MAX_FILE_SIZE_BYTES} bytes.`
+    if (params.contentType != null && params.size != null) {
+      if (params.size > this.MAX_FILE_SIZE_BYTES) {
+        this.logger.warn(
+          `Upload size ${params.size} exceeds maximum allowed size of ${this.MAX_FILE_SIZE_BYTES} bytes`
+        );
+        throw new Error(
+          `File size exceeds the maximum allowed limit of ${this.MAX_FILE_SIZE_BYTES} bytes.`
+        );
+      }
+
+      return this.generateSignedUrl(
+        params.contentType,
+        params.size,
+        populateMetadataAttachments(params.metadata, player_id)
       );
     }
 
-    return this.generateSignedUrl(
-      params.contentType,
-      params.size,
-      populateMetadataAttachments(params.metadata, player_id)
-    );
+    return this.generateSignedUrl();
   }
 
+  async generateSignedUrl(): Promise<SignedUrlResponse>;
   async generateSignedUrl(
     contentType: string,
     size: number,
     metadata?: StorageItemMetadata
-  ): Promise<SignedUrlResponse> {
-    this.logger.debug(
-      `Generating signed URL for ${contentType} (${size} bytes)`
-    );
+  ): Promise<PreAllocatedSignedUrlResponse>;
+  async generateSignedUrl(
+    contentType?: string,
+    size?: number,
+    metadata?: StorageItemMetadata
+  ): Promise<SignedUrlResponse | PreAllocatedSignedUrlResponse> {
+    if (contentType != null && size != null) {
+      this.logger.debug(
+        `Generating pre-allocated signed URL for ${contentType} (${size} bytes)`
+      );
+      return this.client.storage.generateSignedUrl({
+        contentType,
+        size,
+        metadata: populateMetadataAttachments(metadata)
+      });
+    }
 
-    return this.client.storage.generateSignedUrl(
-      contentType,
-      size,
-      populateMetadataAttachments(metadata)
-    );
+    this.logger.debug("Generating non-allocated signed URL");
+    return this.client.storage.generateSignedUrl();
   }
 
   async upload(

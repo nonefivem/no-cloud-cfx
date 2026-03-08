@@ -47,13 +47,14 @@ export class NUIManager {
     cb: (response: RequestSignedUrlResponse) => void
   ) {
     try {
-      if (!data.contentType || !data.size) {
-        throw new Error("Invalid parameters");
+      if (data.contentType != null && data.size != null) {
+        this.logger.debug(
+          `Requesting pre-allocated signed URL for ${data.contentType} (${data.size} bytes)`
+        );
+      } else {
+        this.logger.debug("Requesting non-allocated signed URL");
       }
 
-      this.logger.debug(
-        `Requesting signed URL for ${data.contentType} (${data.size} bytes)`
-      );
       const payload = await this.rpc.requestSignedUrl(data);
 
       this.logger.debug("Signed URL received successfully");
