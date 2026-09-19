@@ -141,16 +141,6 @@ export class NUIManager {
   }
 
   /**
-   * Pushes new values to the NUI, so a UI showing a flag does not have to poll
-   * for one to change.
-   */
-  private handleFlagsChanged(values: FlagValues) {
-    this.logger.debug("Forwarding changed feature flags to the NUI");
-
-    SendNUIMessage({ event: "flags.updated", data: { flags: values } });
-  }
-
-  /**
    * Initializes the NUI manager by registering necessary callbacks.
    */
   init() {
@@ -186,8 +176,6 @@ export class NUIManager {
       "flags.areFlagsReady",
       this.handleAreFlagsReady.bind(this)
     );
-
-    this.flags.watch(this.handleFlagsChanged.bind(this));
   }
 
   /**

@@ -288,11 +288,6 @@ class App extends NoCloudApp {
     const motd = await this.getFlagValue('motd', 'Welcome');
     const all = await this.getFlags();
   }
-
-  // Pushed by the client when the values change - nothing to poll for
-  protected onFlagsUpdated(flags: FlagValues): void {
-    console.log('flags changed', flags);
-  }
 }
 ```
 
@@ -305,17 +300,13 @@ Or call the callbacks directly, from any UI:
 | `flags.isFlagEnabled` | `{ key, fallback? }`   | `{ ok, payload: boolean }`              |
 | `flags.areFlagsReady` | `{}`                   | `{ ok, payload: boolean }`              |
 
-A change is pushed as a `flags.updated` window message carrying
-`{ flags: { key: value, ... } }`.
-
 These reads reach the client script's copy of replicated state, so they are a
 local round trip rather than a request to anything - cheap, but not free. Read
-what you need once rather than per frame, and let `onFlagsUpdated` tell you when
-it changes.
+what you need once rather than per frame, and read again when you need it
+current.
 
 Reading here counts as a read, so it keeps this client counted as a flag reader
-and the values current. Watching alone does not: a change only arrives once the
-server has noticed it, which needs this UI reading, or `polling.enabled` set.
+and the values current.
 
 ### Last Known Values
 

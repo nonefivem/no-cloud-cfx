@@ -31,9 +31,8 @@ export type FlagValues = Record<string, FlagValue>;
 interface NuiMessage {
   event: string;
   data?: {
-    requestId?: number;
+    requestId: number;
     metadata?: StorageItemMetadata;
-    flags?: FlagValues;
   };
 }
 
@@ -204,33 +203,13 @@ export abstract class NoCloudApp {
    */
   private setupNuiListener(): void {
     window.addEventListener("message", (event: MessageEvent<NuiMessage>) => {
-      const data = event.data.data;
-
-      if (event.data.event === "request.image" && data?.requestId !== undefined) {
+      if (event.data.event === "request.image" && event.data.data) {
         this.handleImageRequest({
-          requestId: data.requestId,
-          metadata: data.metadata
+          requestId: event.data.data.requestId,
+          metadata: event.data.data.metadata
         });
       }
-
-      if (event.data.event === "flags.updated") {
-        this.onFlagsUpdated(data?.flags ?? {});
-      }
     });
-  }
-
-  /**
-   * Called when the feature flags change, with every flag this client holds.
-   *
-   * Override to react - the client pushes this rather than the UI polling for
-   * it. A change reaches here once the server notices it, which needs something
-   * keeping the flags current: this UI reading them, or `polling.enabled` on
-   * the server.
-   *
-   * @param flags - Every flag this client holds
-   */
-  protected onFlagsUpdated(flags: FlagValues): void {
-    void flags;
   }
 
   /**
@@ -238,8 +217,7 @@ export abstract class NoCloudApp {
    *
    * The values come from the client script's copy of replicated state, so this
    * is a local round trip rather than a request to anything - cheap, but not
-   * free. Read once and keep what you need rather than reading per frame, and
-   * override {@link onFlagsUpdated} to hear about changes.
+   * free. Read once and keep what you need rather than reading per frame.
    *
    * @returns Every flag, keyed by flag key
    */

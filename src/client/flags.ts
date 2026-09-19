@@ -118,29 +118,6 @@ export class ClientFlagsManager {
   }
 
   /**
-   * Calls back whenever the server publishes different values.
-   *
-   * Watching is not reading: it does not subscribe this client, and the server
-   * only publishes what a fetch found. So a change reaches a watcher when
-   * something is keeping the flags current - a read on this client, or
-   * `polling.enabled` on the server.
-   *
-   * @param listener - Called with every flag this client holds
-   */
-  watch(listener: (values: FlagValues) => void): void {
-    AddStateBagChangeHandler(
-      config.flags.global_state_key,
-      "global",
-      (_bag: string, _key: string, values: unknown) =>
-        listener(
-          typeof values === "object" && values !== null
-            ? (values as FlagValues)
-            : {}
-        )
-    );
-  }
-
-  /**
    * Logs how flags stand for this client. There is nothing to set up - reading
    * the replicated state is the whole mechanism.
    */
