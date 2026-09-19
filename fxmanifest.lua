@@ -3,9 +3,9 @@ game "gta5"
 node_version "22"
 
 name "nocloud"
-description "NoCloud FiveM SDK - Serverless storage and screenshot capture"
+description "NoCloud FiveM SDK - Serverless storage, screenshot capture and feature flags"
 author "NoneM"
-version "0.2.0"
+version "0.3.0"
 url "https://dash.nonefivem.com"
 
 client_script "client.js"

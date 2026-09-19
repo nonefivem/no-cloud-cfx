@@ -1,5 +1,6 @@
 import { StorageItemMetadata } from "@common";
 import { populateMetadataAttachments } from "../common/utils";
+import type { ClientFlagsManager } from "./flags";
 import { ClientRPC } from "./lib/client.rpc";
 import { NUIManager } from "./nui";
 
@@ -8,7 +9,8 @@ export class ClientExportsManager {
 
   constructor(
     private readonly rpc: ClientRPC,
-    private readonly nuiManager: NUIManager
+    private readonly nuiManager: NUIManager,
+    private readonly flags: ClientFlagsManager
   ) {}
 
   private handleTakeImage(metadata?: StorageItemMetadata) {
@@ -36,5 +38,13 @@ export class ClientExportsManager {
       "RequestSignedUrl",
       this.handleRequestSignedUrl.bind(this)
     );
+
+    globalThis.exports("GetFlags", this.flags.getFlags.bind(this.flags));
+    globalThis.exports(
+      "GetFlagValue",
+      this.flags.getFlagValue.bind(this.flags)
+    );
+    globalThis.exports("IsFlagEnabled", this.flags.isEnabled.bind(this.flags));
+    globalThis.exports("AreFlagsReady", () => this.flags.ready);
   }
 }
