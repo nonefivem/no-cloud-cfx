@@ -139,8 +139,63 @@
         "rate_limit"
       ],
       "additionalProperties": false
+    },
+    "flags": {
+      "type": "object",
+      "description": "Feature flag configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether feature flags are available at all. With this off every read falls back and nothing is fetched",
+          "default": true
+        },
+        "cache_ttl_seconds": {
+          "type": "integer",
+          "description": "How long a fetched configuration is served from memory before a read goes back to the API, in seconds. It bounds the polling loop too - a poll landing inside this window skips its turn",
+          "minimum": 1,
+          "default": 10
+        },
+        "global_state_key": {
+          "type": "string",
+          "description": "GlobalState key the shared flag values are published under, which is how clients read them. Server-only flags are never included",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "default": "nocloud_flags"
+        },
+        "persist_last_known": {
+          "type": "boolean",
+          "description": "Whether the last received flags are kept in resource key/value storage, so they are served immediately on the next start and while the API is unreachable. The cache holds server-only values and stays on the server host",
+          "default": true
+        },
+        "polling": {
+          "type": "object",
+          "description": "Background polling configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Whether the flags are refetched whether or not a client is reading them. Off by default, in which case polling runs only while at least one client is - turn it on when something watches the GlobalState key or the nocloud.flags.updated event and must see a change nobody read",
+              "default": false
+            },
+            "interval_ms": {
+              "type": "integer",
+              "description": "How often the flags are refetched while polling runs, in milliseconds. A tick landing inside cache_ttl_seconds skips, so that window is the real floor. Values below 10000 are raised to 10000",
+              "minimum": 10000,
+              "default": 60000
+            }
+          },
+          "required": ["enabled", "interval_ms"],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "enabled",
+        "cache_ttl_seconds",
+        "global_state_key",
+        "persist_last_known",
+        "polling"
+      ],
+      "additionalProperties": false
     }
   },
-  "required": ["client_identifier_extractor", "logging", "storage"],
+  "required": ["client_identifier_extractor", "logging", "storage", "flags"],
   "additionalProperties": false
 }

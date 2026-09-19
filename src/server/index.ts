@@ -1,7 +1,8 @@
-import { Logger } from "@common";
+import { config, Logger } from "@common";
 import NoCloud from "@nocloud/sdk";
 import fetch from "node-fetch";
 import { ServerExportsManager } from "./exports";
+import { FlagsManager } from "./flags";
 import { ServerRPC } from "./lib/server.rpc";
 import { checkForUpdatesAndLog } from "./lib/version.checker";
 import { StorageManager } from "./storage";
@@ -27,12 +28,21 @@ function extractApiKey(): string {
 function main() {
   logger.info("Initializing NoCloud server...");
 
-  const client = new NoCloud(extractApiKey());
+  const client = new NoCloud({
+    apiKey: extractApiKey(),
+    flagsCacheTtlSeconds: config.flags.cache_ttl_seconds
+  });
   const rpc = new ServerRPC();
   const storageManager = new StorageManager(client, rpc);
-  const exportsManager = new ServerExportsManager(rpc, storageManager);
+  const flagsManager = new FlagsManager(client);
+  const exportsManager = new ServerExportsManager(
+    rpc,
+    storageManager,
+    flagsManager
+  );
 
   exportsManager.init();
+  flagsManager.init();
 
   setTimeout(checkForUpdatesAndLog, 2000);
   logger.info("NoCloud server initialized successfully");

@@ -16,6 +16,16 @@ import {
 type StorageItemMetadata = Record<string, string | number | boolean>;
 
 /**
+ * A feature flag's value. Flags hold booleans, strings, numbers or JSON.
+ */
+type FlagValue = string | number | boolean | null | FlagValue[] | { [key: string]: FlagValue };
+
+/**
+ * Feature flags keyed by flag key - every flag this client holds.
+ */
+export type FlagValues = Record<string, FlagValue>;
+
+/**
  * NUI Message from client
  */
 interface NuiMessage {
@@ -25,6 +35,11 @@ interface NuiMessage {
     metadata?: StorageItemMetadata;
   };
 }
+
+/**
+ * Reply to a flag read, from the client
+ */
+type FlagResponse<T> = { ok: true; payload: T } | { ok: false; message: string };
 
 /**
  * Signed URL request to client
@@ -195,6 +210,74 @@ export abstract class NoCloudApp {
         });
       }
     });
+  }
+
+  /**
+   * Read every feature flag this client holds.
+   *
+   * The values come from the client script's copy of replicated state, so this
+   * is a local round trip rather than a request to anything - cheap, but not
+   * free. Read once and keep what you need rather than reading per frame.
+   *
+   * @returns Every flag, keyed by flag key
+   */
+  protected async getFlags(): Promise<FlagValues> {
+    const response = await this.nuiCallback<FlagResponse<FlagValues>>(
+      "flags.getFlags",
+      {}
+    );
+
+    return response.ok ? response.payload : {};
+  }
+
+  /**
+   * Read one feature flag's value, whatever its type.
+   * @param key - The flag's key
+   * @param fallback - Returned when the flag is missing or unreadable
+   * @returns The flag's value, or the fallback
+   */
+  protected async getFlagValue(
+    key: string,
+    fallback: FlagValue = null
+  ): Promise<FlagValue> {
+    const response = await this.nuiCallback<FlagResponse<FlagValue>>(
+      "flags.getFlagValue",
+      { key, fallback }
+    );
+
+    return response.ok ? response.payload : fallback;
+  }
+
+  /**
+   * Check whether a boolean feature flag is on.
+   *
+   * A missing flag, or one holding another type, reads as the fallback - so a
+   * flag archived in the dashboard can never break this UI.
+   *
+   * @param key - The flag's key
+   * @param fallback - Returned when the flag is not a readable boolean flag
+   * @returns Whether the flag is on
+   */
+  protected async isFlagEnabled(key: string, fallback = false): Promise<boolean> {
+    const response = await this.nuiCallback<FlagResponse<boolean>>(
+      "flags.isFlagEnabled",
+      { key, fallback }
+    );
+
+    return response.ok ? response.payload : fallback;
+  }
+
+  /**
+   * Whether the server has published any flags yet.
+   * @returns Whether there are flags to read
+   */
+  protected async areFlagsReady(): Promise<boolean> {
+    const response = await this.nuiCallback<FlagResponse<boolean>>(
+      "flags.areFlagsReady",
+      {}
+    );
+
+    return response.ok && response.payload;
   }
 
   /**

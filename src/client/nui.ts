@@ -1,5 +1,6 @@
-import { Logger, type StorageItemMetadata } from "@common";
-import { SignedUrlResponse } from "@nocloud/sdk";
+import { type FlagValues, Logger, type StorageItemMetadata } from "@common";
+import type { JsonValue, SignedUrlResponse } from "@nocloud/sdk";
+import type { ClientFlagsManager } from "./flags";
 import { ClientRPC, RequestSignedUrlParams } from "./lib/client.rpc";
 
 interface UploadedImage {
@@ -11,6 +12,14 @@ type RequestSignedUrlResponse =
   | { ok: true; payload: SignedUrlResponse }
   | { ok: false; url: null; message: string };
 
+/** What the NUI sends when reading one flag. */
+interface FlagReadRequest {
+  key?: string;
+  fallback?: JsonValue;
+}
+
+type NuiResponse<T> = { ok: true; payload: T } | { ok: false; message: string };
+
 export class NUIManager {
   private readonly logger = new Logger("NUIManager");
   private initialized = false;
@@ -20,7 +29,10 @@ export class NUIManager {
     { resolve: (value: any) => void; reject: (reason?: any) => void }
   > = new Map();
 
-  constructor(private readonly rpc: ClientRPC) {}
+  constructor(
+    private readonly rpc: ClientRPC,
+    private readonly flags: ClientFlagsManager
+  ) {}
 
   private handleImageResponse(
     data: { requestId: number; ok: boolean; image: UploadedImage | null },
@@ -68,6 +80,67 @@ export class NUIManager {
   }
 
   /**
+   * Answers the NUI with every flag this client holds.
+   *
+   * Reading through here is a read like any other - it keeps this client
+   * counted as a flag reader, so the values the NUI sees stay current.
+   */
+  private handleGetFlags(_data: unknown, cb: (r: NuiResponse<FlagValues>) => void) {
+    cb({ ok: true, payload: this.flags.getFlags() });
+  }
+
+  /**
+   * Answers the NUI with one flag's value, whatever its type.
+   *
+   * A missing flag answers with the fallback the NUI sent, or null - the same
+   * rule the exports follow, so a flag archived in the dashboard never breaks
+   * a UI.
+   */
+  private handleGetFlagValue(
+    data: FlagReadRequest,
+    cb: (r: NuiResponse<JsonValue | null>) => void
+  ) {
+    if (!data?.key) {
+      cb({ ok: false, message: "A flag key is required" });
+      return;
+    }
+
+    // undefined does not survive the trip back through JSON, so absent is null.
+    cb({
+      ok: true,
+      payload: this.flags.getFlagValue(data.key, data.fallback) ?? null
+    });
+  }
+
+  /**
+   * Answers the NUI whether a boolean flag is on.
+   */
+  private handleIsFlagEnabled(
+    data: FlagReadRequest,
+    cb: (r: NuiResponse<boolean>) => void
+  ) {
+    if (!data?.key) {
+      cb({ ok: false, message: "A flag key is required" });
+      return;
+    }
+
+    cb({
+      ok: true,
+      payload: this.flags.isEnabled(data.key, data.fallback === true)
+    });
+  }
+
+  /**
+   * Answers the NUI whether the server has published any flags yet.
+   */
+  private handleAreFlagsReady(
+    _data: unknown,
+    cb: (r: NuiResponse<boolean>) => void
+  ) {
+    cb({ ok: true, payload: this.flags.ready });
+  }
+
+  /**
    * Initializes the NUI manager by registering necessary callbacks.
    */
   init() {
@@ -89,6 +162,20 @@ export class NUIManager {
     );
 
     RegisterNuiCallback("response.image", this.handleImageResponse.bind(this));
+
+    RegisterNuiCallback("flags.getFlags", this.handleGetFlags.bind(this));
+    RegisterNuiCallback(
+      "flags.getFlagValue",
+      this.handleGetFlagValue.bind(this)
+    );
+    RegisterNuiCallback(
+      "flags.isFlagEnabled",
+      this.handleIsFlagEnabled.bind(this)
+    );
+    RegisterNuiCallback(
+      "flags.areFlagsReady",
+      this.handleAreFlagsReady.bind(this)
+    );
   }
 
   /**

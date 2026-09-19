@@ -26,6 +26,26 @@ interface MetadataAttachmentConfig {
   player: boolean;
 }
 
+interface FlagPollingConfig {
+  /** Whether the flags are refetched on the interval whether or not a client is reading them */
+  enabled: boolean;
+  /** How often they are refetched, in milliseconds */
+  interval_ms: number;
+}
+
+interface FlagsConfig {
+  /** Whether feature flags are available at all */
+  enabled: boolean;
+  /** How long a fetched configuration is served from memory before a read goes back to the API, in seconds */
+  cache_ttl_seconds: number;
+  /** GlobalState key the shared flag values are published under, which is how clients read them */
+  global_state_key: string;
+  /** Whether the last received flags are kept in resource storage and served on the next start, and while the API is unreachable */
+  persist_last_known: boolean;
+  /** Background polling configuration */
+  polling: FlagPollingConfig;
+}
+
 interface StorageConfig {
   /** Whether client uploads are enabled */
   enable_client_uploads: boolean;
@@ -45,4 +65,5 @@ export interface Config {
   client_identifier_extractor: string;
   logging: LoggingConfig;
   storage: StorageConfig;
+  flags: FlagsConfig;
 }

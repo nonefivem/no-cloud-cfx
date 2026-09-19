@@ -1,6 +1,7 @@
 import { StorageItemMetadata } from "@common";
 import type { UploadResponse } from "@nocloud/sdk";
 import { populateMetadataAttachments } from "../common/utils";
+import type { FlagsManager } from "./flags";
 import { ServerRPC } from "./lib/server.rpc";
 import type { StorageManager } from "./storage";
 
@@ -9,7 +10,8 @@ export class ServerExportsManager {
 
   constructor(
     private readonly rpc: ServerRPC,
-    private readonly storage: StorageManager
+    private readonly storage: StorageManager,
+    private readonly flags: FlagsManager
   ) {}
 
   private async handleTakeImage(
@@ -37,5 +39,20 @@ export class ServerExportsManager {
       "DeleteMedia",
       this.storage.deleteMedia.bind(this.storage)
     );
+
+    globalThis.exports("GetFlag", this.flags.getFlag.bind(this.flags));
+    globalThis.exports("GetFlags", this.flags.getFlags.bind(this.flags));
+    globalThis.exports(
+      "GetFlagValue",
+      this.flags.getFlagValue.bind(this.flags)
+    );
+    globalThis.exports("IsFlagEnabled", this.flags.isEnabled.bind(this.flags));
+    globalThis.exports(
+      "GetCachedFlags",
+      this.flags.getCachedFlags.bind(this.flags)
+    );
+    globalThis.exports("RefreshFlags", this.flags.refresh.bind(this.flags));
+    globalThis.exports("AreFlagsReady", () => this.flags.ready);
+    globalThis.exports("AreFlagsStale", () => this.flags.stale);
   }
 }
