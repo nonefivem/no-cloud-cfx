@@ -10,8 +10,8 @@ function main() {
   logger.info("Initializing NoCloud client...");
 
   const rpc = new ClientRPC();
-  const nuiManager = new NUIManager(rpc);
   const flagsManager = new ClientFlagsManager();
+  const nuiManager = new NUIManager(rpc, flagsManager);
   const exportsManager = new ClientExportsManager(rpc, nuiManager, flagsManager);
 
   nuiManager.init();

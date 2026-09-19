@@ -273,6 +273,50 @@ them current - and five minutes without a read tells it you have stopped. See
 only fire at the edges; every read is a local state bag lookup and nothing
 more.
 
+### From the NUI
+
+The web UI reads the same values, over NUI callbacks. Extend `NoCloudApp` and
+use its helpers:
+
+```ts
+class App extends NoCloudApp {
+  protected async init(): Promise<void> {
+    if (await this.isFlagEnabled('new-hud')) {
+      // ...
+    }
+
+    const motd = await this.getFlagValue('motd', 'Welcome');
+    const all = await this.getFlags();
+  }
+
+  // Pushed by the client when the values change - nothing to poll for
+  protected onFlagsUpdated(flags: FlagValues): void {
+    console.log('flags changed', flags);
+  }
+}
+```
+
+Or call the callbacks directly, from any UI:
+
+| Callback              | Body                   | Replies with                            |
+| --------------------- | ---------------------- | --------------------------------------- |
+| `flags.getFlags`      | `{}`                   | `{ ok, payload: { key: value, ... } }`  |
+| `flags.getFlagValue`  | `{ key, fallback? }`   | `{ ok, payload: value \| null }`        |
+| `flags.isFlagEnabled` | `{ key, fallback? }`   | `{ ok, payload: boolean }`              |
+| `flags.areFlagsReady` | `{}`                   | `{ ok, payload: boolean }`              |
+
+A change is pushed as a `flags.updated` window message carrying
+`{ flags: { key: value, ... } }`.
+
+These reads reach the client script's copy of replicated state, so they are a
+local round trip rather than a request to anything - cheap, but not free. Read
+what you need once rather than per frame, and let `onFlagsUpdated` tell you when
+it changes.
+
+Reading here counts as a read, so it keeps this client counted as a flag reader
+and the values current. Watching alone does not: a change only arrives once the
+server has noticed it, which needs this UI reading, or `polling.enabled` set.
+
 ### Last Known Values
 
 Every snapshot the server receives is kept in resource key/value storage, so the

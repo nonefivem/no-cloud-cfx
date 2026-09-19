@@ -16,15 +16,31 @@ import {
 type StorageItemMetadata = Record<string, string | number | boolean>;
 
 /**
+ * A feature flag's value. Flags hold booleans, strings, numbers or JSON.
+ */
+type FlagValue = string | number | boolean | null | FlagValue[] | { [key: string]: FlagValue };
+
+/**
+ * Feature flags keyed by flag key - every flag this client holds.
+ */
+export type FlagValues = Record<string, FlagValue>;
+
+/**
  * NUI Message from client
  */
 interface NuiMessage {
   event: string;
   data?: {
-    requestId: number;
+    requestId?: number;
     metadata?: StorageItemMetadata;
+    flags?: FlagValues;
   };
 }
+
+/**
+ * Reply to a flag read, from the client
+ */
+type FlagResponse<T> = { ok: true; payload: T } | { ok: false; message: string };
 
 /**
  * Signed URL request to client
@@ -188,13 +204,102 @@ export abstract class NoCloudApp {
    */
   private setupNuiListener(): void {
     window.addEventListener("message", (event: MessageEvent<NuiMessage>) => {
-      if (event.data.event === "request.image" && event.data.data) {
+      const data = event.data.data;
+
+      if (event.data.event === "request.image" && data?.requestId !== undefined) {
         this.handleImageRequest({
-          requestId: event.data.data.requestId,
-          metadata: event.data.data.metadata
+          requestId: data.requestId,
+          metadata: data.metadata
         });
       }
+
+      if (event.data.event === "flags.updated") {
+        this.onFlagsUpdated(data?.flags ?? {});
+      }
     });
+  }
+
+  /**
+   * Called when the feature flags change, with every flag this client holds.
+   *
+   * Override to react - the client pushes this rather than the UI polling for
+   * it. A change reaches here once the server notices it, which needs something
+   * keeping the flags current: this UI reading them, or `polling.enabled` on
+   * the server.
+   *
+   * @param flags - Every flag this client holds
+   */
+  protected onFlagsUpdated(flags: FlagValues): void {
+    void flags;
+  }
+
+  /**
+   * Read every feature flag this client holds.
+   *
+   * The values come from the client script's copy of replicated state, so this
+   * is a local round trip rather than a request to anything - cheap, but not
+   * free. Read once and keep what you need rather than reading per frame, and
+   * override {@link onFlagsUpdated} to hear about changes.
+   *
+   * @returns Every flag, keyed by flag key
+   */
+  protected async getFlags(): Promise<FlagValues> {
+    const response = await this.nuiCallback<FlagResponse<FlagValues>>(
+      "flags.getFlags",
+      {}
+    );
+
+    return response.ok ? response.payload : {};
+  }
+
+  /**
+   * Read one feature flag's value, whatever its type.
+   * @param key - The flag's key
+   * @param fallback - Returned when the flag is missing or unreadable
+   * @returns The flag's value, or the fallback
+   */
+  protected async getFlagValue(
+    key: string,
+    fallback: FlagValue = null
+  ): Promise<FlagValue> {
+    const response = await this.nuiCallback<FlagResponse<FlagValue>>(
+      "flags.getFlagValue",
+      { key, fallback }
+    );
+
+    return response.ok ? response.payload : fallback;
+  }
+
+  /**
+   * Check whether a boolean feature flag is on.
+   *
+   * A missing flag, or one holding another type, reads as the fallback - so a
+   * flag archived in the dashboard can never break this UI.
+   *
+   * @param key - The flag's key
+   * @param fallback - Returned when the flag is not a readable boolean flag
+   * @returns Whether the flag is on
+   */
+  protected async isFlagEnabled(key: string, fallback = false): Promise<boolean> {
+    const response = await this.nuiCallback<FlagResponse<boolean>>(
+      "flags.isFlagEnabled",
+      { key, fallback }
+    );
+
+    return response.ok ? response.payload : fallback;
+  }
+
+  /**
+   * Whether the server has published any flags yet.
+   * @returns Whether there are flags to read
+   */
+  protected async areFlagsReady(): Promise<boolean> {
+    const response = await this.nuiCallback<FlagResponse<boolean>>(
+      "flags.areFlagsReady",
+      {}
+    );
+
+    return response.ok && response.payload;
   }
 
   /**
